@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<CarrierProvisioning xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.microsoft.com/networking/CarrierControl/v1">
+  <Global>
+    <%# TODO: these are unknown %>
+    <CarrierId>{f9345773-3e55-4d21-b065-117b7f71c16a}</CarrierId>
+    <SubscriberId><%= ssid %></SubscriberId>
+  </Global>
+  <WLANProfiles>
+    <WLANProfile xmlns="http://www.microsoft.com/networking/CarrierControl/WLAN/v1">
+      <name><%= ssid %></name>
+      <SSIDConfig>
+        <SSID><name><%= ssid.encode(:xml => :text) %></name></SSID>
+      </SSIDConfig>
+      <connectionType>ESS</connectionType>
+      <connectionMode>auto</connectionMode>
+      <MSM>
+        <security>
+          <authEncryption>
+            <authentication>WPA2</authentication>
+            <encryption>AES</encryption>
+            <useOneX>true</useOneX>
+          </authEncryption>
+          <OneX xmlns="http://www.microsoft.com/networking/OneX/v1">
+            <authMode>user</authMode>
+            <EAPConfig>
+              <EapHostConfig xmlns="http://www.microsoft.com/provisioning/EapHostConfig">
+                <EapMethod>
+                  <Type xmlns="http://www.microsoft.com/provisioning/EapCommon">21</Type>
+                  <VendorId xmlns="http://www.microsoft.com/provisioning/EapCommon">0</VendorId>
+                  <VendorType xmlns="http://www.microsoft.com/provisioning/EapCommon">0</VendorType>
+                  <AuthorId xmlns="http://www.microsoft.com/provisioning/EapCommon">311</AuthorId>
+                </EapMethod>
+                <Config>
+                  <EapTtls xmlns="http://www.microsoft.com/provisioning/EapTtlsConnectionPropertiesV1">
+                    <ServerValidation>
+                      <ServerNames />
+                      <TrustedRootCAHash><%= server_cert_win_fingerprint %></TrustedRootCAHash>
+                      <DisablePrompt>false</DisablePrompt>
+                    </ServerValidation>
+                    <Phase2Authentication>
+                      <PAPAuthentication />
+                    </Phase2Authentication>
+                    <Phase1Identity>
+                      <IdentityPrivacy>true</IdentityPrivacy>
+                      <AnonymousIdentity>anonymous@boingo.com</AnonymousIdentity>
+                    </Phase1Identity>
+                  </EapTtls>
+                </Config>
+              </EapHostConfig>
+            </EAPConfig>
+          </OneX>
+          <EapHostUserCredentials xmlns="http://www.microsoft.com/provisioning/EapHostUserCredentials" xmlns:baseEap="http://www.microsoft.com/provisioning/BaseEapMethodUserCredentials" xmlns:eapCommon="http://www.microsoft.com/provisioning/EapCommon">
+            <EapMethod>
+              <eapCommon:Type>21</eapCommon:Type>
+              <eapCommon:AuthorId>311</eapCommon:AuthorId>
+            </EapMethod>
+            <Credentials xmlns="http://www.microsoft.com/provisioning/EapHostUserCredentials">
+              <EapTtls xmlns="http://www.microsoft.com/provisioning/EapTtlsUserPropertiesV1">
+                <Username><%= wifi_username.encode(:xml => :text) %></Username>
+                <Password><%= wifi_password.encode(:xml => :text) %></Password>
+              </EapTtls>
+            </Credentials>
+          </EapHostUserCredentials>
+        </security>
+      </MSM>
+    </WLANProfile>
+  </WLANProfiles>
+  <% if server_cert %>
+  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+    <SignedInfo>
+      <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+      <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+      <Reference URI="">
+        <Transforms>
+          <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+        </Transforms>
+        <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+        <DigestValue></DigestValue>
+      </Reference>
+    </SignedInfo>
+    <SignatureValue></SignatureValue>
+    <KeyInfo>
+      <X509Data>
+        <% intermediate_flat_certs.each do |cert| %>
+        <X509Certificate><%= cert %></X509Certificate>
+        <% end %>
+        <X509Certificate><%= server_cert_flat %></X509Certificate>
+      </X509Data>
+    </KeyInfo>
+  </Signature>
+  <% end %>
+</CarrierProvisioning>

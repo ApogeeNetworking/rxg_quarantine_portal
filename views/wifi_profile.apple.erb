@@ -1,0 +1,59 @@
+<% settings_uuid = SecureRandom.uuid %>
+<% profile_uuid = SecureRandom.uuid %>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>PayloadContent</key><array>
+      <dict>
+        <key>AutoJoin</key><true/>
+        <key>CaptiveBypass</key><false/>
+        <key>DisableAssociationMACRandomization</key><false/>
+        <key>DisplayedOperatorName</key><string><%= provider_name %></string>
+        <key>DomainName</key><string><%= common_name %></string>
+        <key>IsHotspot</key><true/>
+        <key>PayloadDisplayName</key><string>WiFi</string>
+        <key>PayloadDescription</key><string>Configures Wi-Fi Settings</string>
+        <key>PayloadIdentifier</key><string>com.apple.wifi.managed.<%= settings_uuid %></string>
+        <key>PayloadType</key><string>com.apple.wifi.managed</string>
+        <key>PayloadUUID</key><string><%= settings_uuid %></string>
+        <key>PayloadVersion</key><integer>1</integer>
+        <key>ProxyType</key><string>None</string>
+        <key>NAIRealmNames</key><array><string><%= common_name %></string></array>
+        <key>RoamingConsortiumOIs</key><array/>
+        <key>ServiceProviderRoamingEnabled</key><true/>
+        <key>EncryptionType</key><string>WPA</string>
+        <key>HIDDEN_NETWORK</key><false/>
+        <key>EAPClientConfiguration</key><dict>
+          <key>AcceptEAPTypes</key><array><integer>21</integer></array>
+          <key>OuterIdentity</key><string>anonymous@<%= common_name %></string>
+          <key>TLSTrustedServerNames</key><array><string><%= common_name %></string></array>
+          <key>TTLSInnerAuthentication</key><string>PAP</string>
+          <key>UserName</key><string><%= wifi_username.encode(:xml => :text) %></string>
+          <key>UserPassword</key><string><%= wifi_password.encode(:xml => :text) %></string>
+        </dict>
+			  <key>_UsingHotspot20</key><true/>
+      </dict>
+      <% if ca_cert_flat %>
+        <dict>
+          <% wifi_uuid = SecureRandom.uuid %>
+          <key>PayloadContent</key><data><%= ca_cert_flat %></data>
+          <key>PayloadDisplayName</key><string>AAA Trust Certificate</string>
+          <key>PayloadIdentifier</key><string>com.apple.security.pkcs1.<%= wifi_uuid %></string>
+          <key>PayloadType</key><string>com.apple.security.pkcs1</string>
+          <key>PayloadUUID</key><string><%= wifi_uuid %></string>
+          <key>PayloadVersion</key><integer>1</integer>
+        </dict>
+      <% end %>
+    </array>
+    <key>PayloadType</key><string>Configuration</string>
+    <key>PayloadVersion</key><integer>1</integer>
+    <key>PayloadIdentifier</key><string><%= profile_uuid %></string>
+    <key>PayloadDisplayName</key><string><%= profile_name %></string>
+    <key>PayloadRemovalDisallowed</key><false/>
+    <key>PayloadDescription</key><string><%= profile_name %></string>
+  	<key>PayloadOrganization</key><string><%= provider_name %></string>
+  	<key>PayloadRemovalDisallowed</key><false/>
+  	<key>PayloadUUID</key><string><%= profile_uuid %></string>
+  </dict>
+</plist>
