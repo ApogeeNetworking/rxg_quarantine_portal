@@ -1,0 +1,120 @@
+// JavaScript assets manifest for this custom portal.
+//= require rails-ujs
+//
+// Gettext
+//= try_require_tree ./locales
+//= require gettext/all
+//
+// jQuery framework:
+//= require jquery
+//
+// Bootstrap
+//= require moment
+//
+// Datatables
+//= require ./datatables.min
+//
+// QRCode
+//= require ./qrcode.min
+//
+
+function updateTotalPrice() {
+  $(".usage-plan-content:visible").each(function(){
+    const currency = this.dataset.currency || "USD"
+    const totalPriceElement = $(this).find(".total_price")
+    const subTotalPriceElement = $(this).find(".sub_total_price")
+    const boldTextFinalPrice = $("#usage-plan-purchase-price")
+    let total = Number(totalPriceElement.data('base-price')) || 0
+
+    const totals = $(this).find(".price_display:visible, .included_price_element").map(function( i, element ) {
+      return Number($(element).data('price')) || 0
+    })
+
+    for (let i = totals.length - 1; i >= 0; i--) {
+      total += totals[i]
+    }
+
+    const userLocale =
+      navigator.languages && navigator.languages.length
+        ? navigator.languages[0]
+      : navigator.language;
+
+    console.log('currency', currency, 'userLocale', userLocale)
+
+    const localeFormatter = new Intl.NumberFormat(userLocale || "en_US", { style: 'currency', currency: currency })
+
+    const formatted_subtotal = localeFormatter.format(total);
+
+    if (subTotalPriceElement) {subTotalPriceElement.html(formatted_subtotal)}
+    const credit = Number($(this).find(".credit-price-element").data('credit')) || 0
+    const oldTotal = total
+    total -= credit
+
+    let totalString = ''
+
+    if (total <= 0) {
+      total = 0
+      totalString = `${ localeFormatter.format(total) } (${ localeFormatter.format(oldTotal)} from credit)`
+    } else if (total == 0) {
+      totalString = `free${ credit > 0 ? ' (from credit)' : ''}`
+    } else if (credit > 0) {
+      totalString = `${ localeFormatter.format(total) } (${ localeFormatter.format(credit) } from credit)`
+    } else {
+      totalString = total.toFixed(2)
+    }
+
+
+    totalPriceElement.html(totalString)
+    boldTextFinalPrice.html(totalString)
+  })
+
+}
+
+function handlePlanAddonSliderMouseMoveChanged() {
+  $(this).closest('.plan_addon').find('.slider_quantity_display').html(this.value)
+  const price = $(this).data('fixed-price') || (parseFloat($(this).data('price-per-quantity')) * parseInt(this.value)).toFixed(2)
+  $(this).closest('.plan_addon').find('.slider_price_display').html(price).data('price', price)
+  updateTotalPrice()
+}
+
+function handlePlanAddonSliderChanged() {
+  $(this).closest('.plan_addon').find('h4 input[type="checkbox"]').prop('checked', true)
+  updateTotalPrice()
+}
+
+function handlePlanAddonToggleChanged() {
+  const selectedOpt = $(this).find(":selected")[0]
+  const target = $(selectedOpt).data('target')
+  $(this).closest('.price-group').find(".plan_addon").hide()
+  if (target) {
+    $(target).show()
+  }
+  updateTotalPrice()
+}
+
+function enableTooltips() {
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  })
+}
+
+function CopyToClipboard(containerId) {
+  let text = document.getElementById(containerId).innerHTML;
+  try {
+    navigator.clipboard.writeText(text);
+  } catch (err) {
+    console.error('Failed to copy: ', err);
+  }
+}
+
+function setupEventHandlers() {
+  $('body').on('change mousemove', ".plan_addon_slider", handlePlanAddonSliderMouseMoveChanged)
+  $('body').on('change', ".plan_addon_slider", handlePlanAddonSliderChanged)
+  $('body').on('change', ".plan_addon_toggle", handlePlanAddonToggleChanged)
+  $('.plan_addon_toggle').trigger('change')
+}
+
+$(() => {
+  setupEventHandlers()
+})

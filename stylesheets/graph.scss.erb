@@ -1,0 +1,110 @@
+.graph {
+  height: 450px;
+  width: 575px;
+  padding: 10px;
+  display: inline-block;
+}
+
+.portal-graphs-container > .border {
+  border: 1px solid #d0d0d0;
+  border-radius: 5px;
+  -webkit-box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5) ,
+  0 1px 4px rgba(0, 0, 0, 0.3) ,
+  0 0 10px rgba(0, 0, 0, 0.1) inset;
+  -moz-box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5) ,
+  0 1px 4px rgba(0, 0, 0, 0.3) ,
+  0 0 10px rgba(0, 0, 0, 0.1) inset;
+  box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5) ,
+  0 1px 4px rgba(0, 0, 0, 0.3) ,
+  0 0 10px rgba(0, 0, 0, 0.1) inset;
+  border-radius: 10px 10px 10px 10px;
+  -moz-border-radius: 10px 10px 10px 10px;
+  -webkit-border-radius: 10px 10px 10px 10px;
+}
+
+.chart_title {
+  font-weight: 900;
+  font-size: 24px;
+  text-align: center;
+  width: 100%;
+}
+
+text.chart_subtitle {
+  font-size: 12px;
+}
+
+svg.nvd3-svg text, .graph {
+  fill: #000; /* color of text within the chart */
+  color: #000;
+}
+
+g.tick {
+  word-wrap: break-word;
+  text-align: center;
+  font-size: 12px;
+}
+
+svg text>tspan {
+  fill: #404040;
+  font-size: 12px;
+}
+
+text.nvd3.nv-noData {
+  fill: #404040;
+  font-size: 13px;
+}
+
+.chart_title {
+  fill: #404040; /* color of text within the chart */
+  color: #404040;
+}
+
+.chart_title:hover {
+  fill: #ed3237; /* color of text within the chart */
+  color: #ed3237;
+  text-decoration: none;
+}
+
+.download_svg {
+  visibility: hidden;
+  margin: 20px auto 0px auto;
+  display: block;
+  width: 300px;
+  color: #404040;
+  cursor: pointer;
+  text-align: center;
+  font-size: 75%;
+}
+.download_svg>a {
+  color: #404040;
+  text-decoration: none;
+}
+.download_svg>a:hover {
+  color: #ed3237;
+  background-color: inherit;
+}
+
+.graph.block {
+  display: block;
+}
+
+.dataLoading {
+  width: 200px;
+  height: 200px;
+  display: block;
+  margin: auto;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  background-image: url(<%= portal_asset_data_uri 'gears.gif' %>);
+  background-repeat: no-repeat;
+}
+
+.loading_icon {
+  display: none;
+  height: 16px;
+  width: 16px;
+  background-image: url(<%= portal_asset_data_uri 'loading_icon.gif' %>);
+  vertical-align: bottom;
+  margin: 0 10px;
+}

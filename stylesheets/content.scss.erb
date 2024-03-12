@@ -1,0 +1,230 @@
+:root {
+  --dropShadow: #00000029;
+  --textColor: #707070;
+  --rg-branding-primary:  #365B73;
+  --rg-branding-secondary: #567B93;
+  --rg-dark-mode-neutral:  #ffffff;
+  --rg-dark-mode-red: #ba122b;
+  --rg-light-mode-neutral: #000000;
+  --rg-light-mode-red: #ca0023
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0 !important;
+  color: #004b79 !important;
+}
+
+body.bg-dark{
+  background-color: white !important;
+}
+
+.header, .footer {
+  background-color: #006ba8;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.header img {
+  height: auto;
+  max-height: 50px; /* Adjust based on your header size */
+  width: auto;
+  max-width: 100%;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer a, .footer span {
+  color: white;
+  text-decoration: none;
+  font-size: 16px; /* Adjust as needed */
+  margin: 0 5px;
+}
+
+.footer img {
+  height: 24px; /* Adjust as needed */
+  width: auto;
+  margin-left: 5px; /* Adjust spacing between text and icon */
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  background: white !important;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+h1, h2 {
+  color: #0056b3;
+}
+ul {
+  list-style-type: disc;
+  margin: 0;
+  padding-left: 40px; /* Increased indentation */
+  color: #004b79;
+}
+li {
+  margin-bottom: 10px;
+}
+@media (max-width: 576px) {
+    .container {
+    padding: 15px;
+    }
+  .footer a, .footer span {
+   font-size: 14px; /* Adjust for mobile */
+  }
+  .footer img {
+    height: 20px; /* Adjust for mobile */
+  }
+}
+p {
+  color: #004b79;
+}
+#wrapper {
+  display: grid;
+}
+
+.login-card form {
+  height: 100%;
+}
+
+.bg-transparent[readonly="readonly"] {
+  background-color: #e7e7e72b !important;
+  cursor: default;
+}
+/* RG NETS DEFAULT LOGO STYLES (default_logo.svg.erb) */
+
+svg.branding-logo.dark-mode path.red {
+  fill:var(--rg-dark-mode-red);
+}
+
+svg.branding-logo.dark-mode path.neutral {
+  fill: var(--rg-dark-mode-neutral);
+}
+
+svg.branding-logo:not(.dark-mode) path.red {
+  fill: var(--rg-light-mode-red);
+}
+
+svg.branding-logo:not(.dark-mode) path.neutral {
+  fill: var(--rg-light-mode-neutral);
+}
+
+/* END RGNETS DEFAULT LOGO STYLES */
+
+
+/*  SOCIAL LOGIN BUTTONS */
+
+.social-login-btn {
+  padding-right: 45px;
+  height: 35px;
+  background: none;
+  border: none;
+  display: block;
+  background-size: 35px 35px;
+  background-position: right center;
+  background-repeat: no-repeat;
+  border-radius: 4px;
+  color: white;
+  font-size: 14px;
+  margin: 0px auto 15px;
+  width: 205px;
+  border-bottom: 2px solid transparent;
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
+  box-shadow: 0 4px 2px -2px gray;
+  text-shadow: rgba(0, 0, 0, 0.5) -1px -1px 0;
+  cursor: pointer;
+}
+
+/* include -custom in the class names to prevent AdBlockPlus from blocking
+the social media login buttons */
+.btn-facebook, .btn-facebook-custom {
+  border-color: #2d5073;
+  background-color: #3b5998;
+  background-image: url(<%= portal_asset_data_uri 'facebook-icon.png' %>);
+}
+.btn-twitter, .btn-twitter-custom {
+  border-color: #007aa6;
+  background-color: #008cbf;
+  background-image: url(<%= portal_asset_data_uri 'twitter-icon.png' %>);
+  background-size: 40px;
+}
+.btn-googleplus, .btn-googleplus-custom {
+  border-color: #111;
+  background-color: #222;
+  text-shadow: #333 -1px -1px 0;
+  background-image: url(http://www.iconsdb.com/icons/preview/white/google-plus-xxl.png);
+}
+.btn-google_oauth2, .btn-google_oauth2-custom, .btn-google, .btn-google-custom {
+  border: none;
+  background-color: #FFF;
+  color: #515151;
+  text-shadow: inherit;
+  background-image: url(<%= portal_asset_data_uri 'google-icon.svg' %>);
+}
+
+.btn-azure_oauth2, .btn-azure_oauth2-custom {
+  border: none;
+  background-color: #FFF;
+  color: #515151;
+  text-shadow: inherit;
+  background-image: url(<%= portal_asset_data_uri 'azure-icon.svg' %>);
+  background-size: 31px;
+  background-position: right 2px center;
+}
+
+.btn-instagram, .btn-instagram-custom {
+  background-image: url(<%= portal_asset_data_uri 'instagram-icon.png' %>);
+  border: none;
+  background-color: #db3075;
+  color: #FFF;
+  text-shadow: inherit;
+  background-size: 17px;
+  background-position: right 8px center;
+}
+.btn-linked_in, .btn-linked_in-custom {
+  border: none;
+  background-color: #0377b5;
+  color: #FFF;
+  text-shadow: inherit;
+  background-image: url(<%= portal_asset_data_uri 'linked_in-icon.svg' %>);
+}
+.btn-saml-custom {
+  background-color: #428bca;
+  border-color: #357ebd;
+  /* Remove padding-right: 0px; and add a background-image to add a logo to button */
+  padding-right: 0px;
+}
+/* END SOCIAL LOGIN BUTTONS */
+
+/* Usage Plan display */
+.quick-purchase-usage-plan > div > ul > li {
+  text-align: left;
+}
+.usage-plan-content > table > tbody > tr > th {
+  width: 25%;
+}
+.usage-plan-content > table > tbody > tr > td > ul {
+  padding-left: none;
+}
+.usage-plan-content > table > tbody > tr > td > ul > li {
+  list-style-type: none;
+  text-align: left;
+}
+#apiKeyModal > .modal-dialog > .modal-content {
+  color: #000;
+  border-radius: 15px !important;
+}
