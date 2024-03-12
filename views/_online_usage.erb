@@ -1,0 +1,56 @@
+<%= card(class: portal_card_classes) do %>
+  <%= card_body do %>
+    <%= card_title do %>
+      <%= _('Online Usage') %>
+    <% end # card_title %>
+    <% if @current_account.usage_minutes.to_i > 0 %>
+      <%= card_text do %>
+        <%= (_('You started with <strong> %{time} of online time </strong> available when you last logged in or purchased a usage plan.' ) % { time: distance_of_time(@current_account.usage_minutes.minutes, highest_measures: 2) }).html_safe %>
+      <% end # card_text %>
+    <% elsif @current_account.unlimited_usage_minutes? %>
+      <%= card_text do %>
+        <%= _('You have <strong>unlimited online time</strong> available.').html_safe %>
+      <% end # card_text %>
+    <% else %>
+      <%= card_text do %>
+        <strong><%= (_('You have no online time available. %{link}') % {link: link_to(_('buy now'), action: :usage_plan_list)}).html_safe %></strong>
+      <% end # card_text %>
+    <% end # if @current_account.usage_minutes.to_i > 0 %>
+
+    <% if @current_account.usage_bytes_up.to_i > 0 %>
+      <%= card_text do %>
+        <%= (_('You started with a <strong> %{quota} upload quota </strong> when you last logged in or purchased a usage plan.' ) % { quota: number_to_human_size(@current_account.usage_bytes_up) }).html_safe %>
+      <% end # card_text %>
+    <% elsif @current_account.unlimited_usage_mb_up? %>
+      <%= card_text do %>
+        <%= _('You have an <strong> unlimited upload quota. </strong>').html_safe %>
+      <% end # card_text %>
+    <% else %>
+      <strong> <%= (_('You have no upload quota. %{link}') % {link: link_to(_('buy now'), action: :usage_plan_list)}).html_safe %> </strong>
+    <% end # if @current_account.usage_bytes_up.to_i > 0 %>
+
+    <% if @current_account.usage_bytes_down.to_i > 0 %>
+      <%= card_text do %>
+        <%= (_('You started with a <strong> %{quota} download quota </strong> when you last logged in or purchased a usage plan.' ) % { quota: number_to_human_size(@current_account.usage_bytes_down) }).html_safe %>
+      <% end # card_text %>
+    <% elsif @current_account.unlimited_usage_mb_down? %>
+      <%= card_text do %>
+        <%= _('You have an <strong> unlimited download quota. </strong>').html_safe %>
+      <% end # card_text %>
+    <% else %>
+      <%= card_text do %>
+        <strong> <%= (_('You have no download quota. %{link}') % {link: link_to(_('buy now'), action: :usage_plan_list)}).html_safe %> </strong>
+      <% end # card_text %>
+    <% end # if @current_account.usage_bytes_down.to_i > 0%>
+
+    <% if @current_account.usage_expiration %>
+      <%= card_text do %>
+        <%= (_('Your online usage <strong> expires in %{time} </strong> on %{date}.') % {time: distance_of_time_in_words(Time.now, @current_account.usage_expiration, highest_measures: 2), date: l(@current_account.usage_expiration)}).html_safe %>
+      <% end # card_text %>
+    <% else %>
+      <%= card_text do %>
+        <%= _('Your online usage <strong>never</strong> expires.').html_safe %>
+      <% end # card_text %>
+    <% end # if @current_account.usage_expiration %>
+  <% end # card_body %>
+<% end # card %>

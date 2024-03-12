@@ -1,0 +1,73 @@
+<%= card_body do %>
+  <%= card_title do %>
+    <%= _('Hello, %{title} %{name}') % { title: @guest.title, name: @guest.name } %>
+  <% end # card_title %>
+  <% if @guest.no_post? && @usage_plans.empty? %>
+    <%= card_text do %>
+      <%= _('You are not allowed to post any charges to your room.') %>
+    <% end # card_text %>
+    <%= card_text do %>
+      <%= _('If you wish to purchase additional Internet access you must call the front desk and have them enable amenity charge posting to your room.') %>
+    <% end # card_text %>
+  <% else %>
+    <%= bootstrap_form_for(@payment_method, url: { action: :quick_purchase_charge },
+      html: { name: 'payment_form', id: 'payment_form', onsubmit: 'return paymentFormOnSubmit()' }) do |f| %>
+      <%= hidden_field_tag(:method, 'pms') %>
+      <%= hidden_field_tag(:pms_guest_id, @guest.id) %>
+      <%# sometimes a guest can have multiple rooms, we need to use the room that
+       the user originally entered when they started the login process.  i.e.
+       @guest.room could be different than params[:RN].  fallback to @guest if
+       the parameters do not exist %>
+      <%= f.hidden_field :first_name, value: params[:RN] || @guest.room %>
+      <%= f.hidden_field :last_name,  value: params[:GN] || @guest.name %>
+      <fieldset>
+        <legend>Select your desired connection type</legend>
+        <!-- list of available plans -->
+        <% if @usage_plans.any? %>
+          <%= render_portal_partial('quick_purchase_plan_fields', locals: {f: f}) %>
+          <div class="col-12 mb-2">
+            <%= label_tag :email, _('Email Address'), class: 'visually-hidden' %>
+            <%= email_field_tag :email, params[:email], placeholder: _('Email Address'), class: portal_form_input_classes, required: true, minlength: 3, maxlength: 254, autocomplete: 'email', autocorrect: :off, autocapitalize: :off, spellcheck: false %>
+          </div>
+            <%= f.submit(_('Select'), id: 'submit_button', class: portal_submit_classes, data: { disable_with: _('Please wait...') } ) %>
+        <% else %>
+          <div class="w-100">
+            <hgroup class="text-center">
+              <h3><%= _('There are no options available for your stay.') %></h3>
+              <h4><%= _('If you need further assistance please contact the front desk.') %></h4>
+            </hgroup>
+          </div>
+        <% end # if @usage_plans.any %>
+      </fieldset>
+    <% end # bootstrap_form_for %>
+  <% end # if @guest.no_post? && @usage_plans.empty? %>
+<% end # card_body %>
+
+<script type="text/javascript">
+  function usagePlanOnChange(event) {
+    const input = $(event.target)
+    const plan_id = input.val()
+    const option = input.find(':selected')
+    if (option) {
+      $('.quick-purchase-usage-plan').hide()
+      $('.quick-purchase-usage-plan *').attr('disabled', true)
+      $('.quick-purchase-plan-total').hide()
+      $(`#plan-description-${plan_id}`).show()
+      $(`#plan-description-${plan_id} *`).attr('disabled', false)
+      $(`#plan-time-quota-${plan_id}`).show()
+      $(`#plan-time-quota-${plan_id} *`).attr('disabled', false)
+      $(`#plan-addons-${plan_id}`).show()
+      $(`#plan-addons-${plan_id} *`).attr('disabled', false)
+      $(`#plan-total-${plan_id}`).show()
+
+      if (window.updateTotalPrice) {
+        updateTotalPrice()
+      }
+    }
+  }
+
+  $(() => {
+    const usagePlanInput = $('#payment_method_usage_plan_id')
+    usagePlanInput.change(usagePlanOnChange)
+  })
+</script>

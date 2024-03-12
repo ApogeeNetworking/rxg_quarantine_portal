@@ -1,0 +1,10 @@
+<%= offcanvas(position: :start, class: portal_offcanvas_menu_classes, aria_labelled_by: 'offcanvas-title') do %>
+  <%= offcanvas_header(close: @dark_mode ? 'white' : true) do %>
+    <%= offcanvas_title(id: 'offcanvas-title') do %>
+      <%= _('Menu') %>
+    <% end # offcanvas_title%>
+  <% end # offcanvas_header %>
+  <%= offcanvas_body do %>
+    <%= render_portal_partial('menu') %>
+  <% end # offcanvas_body %>
+<% end # offcanvas do %>

@@ -1,0 +1,65 @@
+<% visible = plan_addon.id.in?( subscription.subscription_addons.collect(&:plan_addon_id) ) %>
+<div class="plan_addon" style="<%= 'display: none' unless visible %>" id="<%= "plan_addon_options_#{usage_plan.id}_#{plan_addon.id}" %>">
+
+  <div class="row">
+    <div class="col-6 center-align">
+      <% if plan_addon.supports_variable_quantity? %>
+        <% val = @subscription.subscription_addons.find { |sa| sa.plan_addon_id == plan_addon.id }.try(:quantity) ||
+                 plan_addon.min_quantity.presence ||
+                 0 %>
+
+        <%= plan_addon.min_quantity %>
+
+        <%
+          if plan_addon.component == 'lifetime' && @guest
+            addon_unit = plan_addon.time_unit
+            addon_max = plan_addon.max_quantity.presence
+            # convert the number of days into the time_unit of the plan addon
+            # (3.days / 1.hours) = 72 hours
+            # (3.days / 1.days) = 3 days
+            guest_max = @guest.remaining_duration_days.days / 1.send(addon_unit.to_sym)
+
+            max = [ [guest_max, addon_max].compact.min, 1].max
+          else
+            max = plan_addon.max_quantity.presence
+          end
+        %>
+        <%= range_field_tag("usage_plan[#{usage_plan.try(:id)}][plan_addon_options][#{plan_addon.id}][quantity]",
+              val,
+              class: 'plan_addon_slider',
+              min: plan_addon.min_quantity.presence || 0,
+              max: max,
+              data: {
+                price_per_quantity: plan_addon.price_per_quantity,
+                fixed_price: plan_addon.fixed_price,
+                component: plan_addon.component
+              }) %>
+        <%= max %>
+        <br>
+        <span class="slider_quantity_display"><%= val %></span> <%= "#{plan_addon.time_unit.singularize}(s)" if plan_addon.requires_time_unit? %>
+      <% end %>
+      <div class="addon_description"><%= plan_addon.description.to_s.html_safe %></div>
+      <% if plan_addon.component == 'account_group' && policy = plan_addon.account_group.try(:policy) %>
+        <% policy.bandwidth_queues.each do |queue| -%>
+          <% if queue.net_apps.empty? && queue.wan_targets.empty? %>
+              <b>Speed:</b> <%= queue.bandwidth %>
+            <% break %>
+          <% end %>
+        <% end %>
+
+      <% end %>
+    </div>
+    <div class="col-6 right-align">
+      <% if plan_addon.supports_variable_quantity? %>
+        <%= plan_addon.price_display %>
+        <% if plan_addon.price_per_quantity.present? %>
+          X <span class="slider_quantity_display"><%= val %></span>
+          = <span class="price_display"><%= usage_plan.currency_unit %></span><span class="slider_price_display price_display" data-price="<%= plan_addon.price_per_quantity * val %>"><%= sprintf("%.2f", plan_addon.price_per_quantity * val) %></span>
+        <% end %>
+      <% else %>
+        <span class="price_display" data-price="<%= plan_addon.fixed_price.to_f %>"><%= plan_addon.price_display %></span>
+      <% end %>
+    </div>
+  </div>
+
+</div>

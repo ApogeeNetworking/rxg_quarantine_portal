@@ -1,0 +1,13 @@
+<%
+  title ||= _('Room Login')
+  hide_title ||= false
+%>
+<%= bootstrap_form_tag(url: {action: :pms_guest_login}, id: 'pms_guest_login') do |f| %>
+  <fieldset class="d-flex flex-column h-100">
+    <legend class="<%= 'visually-hidden' if hide_title %>"><%= title %></legend>
+    <%= f.text_field('RN', {value: params[:RN], title: _('Room Number'), label: _('Room Number...'), label_as_placeholder: true, class: portal_form_input_classes}) %>
+    <%= f.text_field('GN', {value: params[:GN], title: _('Last Name'), label: _('Last Name...'), label_as_placeholder: true, class: portal_form_input_classes, autocorrect: :off}) %>
+    <%= render_portal_partial('terms_checkbox', locals: { f: f }) %>
+    <%= f.submit(_('Continue'), class: "mt-auto #{portal_login_submit_classes}", data: { disable_with: _('Please wait...') }) %>
+  </fieldset>
+<% end %>

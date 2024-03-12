@@ -1,0 +1,37 @@
+<% if (rotator = Rotator.find_by_urn("footer")) && rotator.rotatees.any? %>
+  <footer class="footer d-flex flex-column align-items-center justify-content-center bg-white">
+      <% rotator.rotatees.each do |item| %>
+
+        <%# The name field of a rotatee can contain a URL of a
+        remote image, or a filename of an image in the images
+        directory of the portal.  %>
+
+        <%# The payload field can contain a URL that
+        the image should hyperlink to. %>
+
+        <% if item.name =~ /http/ %>
+
+          <% if item.payload =~ /http/ %>
+            <%= link_to item.payload do %>
+              <%= image_tag item.name %>
+            <% end %>
+          <% else %>
+            <%= image_tag item.name %>
+          <% end %>
+
+        <% elsif File.exist?(Rails.root.join('app/assets/images', relative_asset_path, item.name)) %>
+
+          <% if item.payload =~ /http/ %>
+            <%= link_to item.payload do %>
+              <%= portal_inline_svg item.name %>
+            <% end %>
+          <% else %>
+            <%= portal_inline_svg item.name %>
+          <% end %>
+
+        <% else %>
+          <!-- Unable to locate an image with the filename '<%= item.name %>' -->
+          <% end %>
+    <% end %>
+  </footer>
+<% end %>

@@ -1,0 +1,25 @@
+<%= modal(id: 'join_lan_party_modal', scrollable: true, size: :xl, aria_labelled_by: 'join_lan_party_modal_title', content: { class: ["#{'bg-dark' if @dark_mode}"] }) do %>
+  <%= modal_header(close: @dark_mode ? 'light' : true) do %>
+    <%= modal_title(id: 'join_lan_party_modal_title') do %>
+      <%= _('Join a LAN Party') %>
+    <% end # modal_title %>
+  <% end #modal_header %>
+  <%= modal_body do %>
+    <p class="text-center">
+      <%= _('<strong>WARNING:</strong> By joining a LAN Party, you are entering the
+      network of another user who will have direct access to your
+      devices. Up-to-date Anti-virus and firewalls are recommended to 
+      protect your devices. Only join a LAN Party of someone you trust.').html_safe %>
+    </p>
+    <%= bootstrap_form_tag(url: {action: :join_lan_party}) do |f| %>
+      <fieldset>
+        <legend><%= _('Join an existing party:') %></legend>
+        <%= f.form_group do %>
+          <%= f.text_field :party_password, {value: nil, class: portal_form_input_classes, label: _('Password'), label_as_placeholder: true, minlength: 2, maxlength: 40, autocomplete: 'new-password', autocorrect: :off, autocapitalize: :off, spellcheck: false} %>
+        <% end # f.form_group %>
+        <%= f.submit _('Join'), class: portal_submit_classes, data: {disable_with: _('Please wait...')}  %>
+      </fieldset>
+    <% end # bootstrap_form_tag %>
+  <% end #modal_body %>
+  <%= modal_footer %>
+<% end # modal %>

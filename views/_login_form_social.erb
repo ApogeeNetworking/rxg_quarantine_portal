@@ -1,0 +1,36 @@
+<%
+  title ||= _('Social Login')
+  hide_title ||= false
+%>
+<%= bootstrap_form_tag(url: {action: nil}, id: 'social_login') do |f| %>
+  <fieldset class="d-flex flex-column">
+    <legend class="<%= 'visually-hidden' if hide_title %>"><%= title %></legend>
+    <%= render_portal_partial 'survey_questions_fields' unless @omniauth_strategies.collect(&:provider_type).uniq == ['saml'] %>
+    <%= render_portal_partial('terms_checkbox', locals: { f: f }) %>
+    <% @omniauth_strategies.each do |omniauth_strategy| %>
+      <%= f.button( omniauth_strategy.login_button_text, name: omniauth_strategy.provider_name, value: url_for(action: "#{omniauth_strategy.provider_type}_login", id: omniauth_strategy.id, only_path: true), class: omniauth_strategy.button_class ) %>
+    <% end %>
+  </fieldset>
+<% end %>
+<script>
+  $(function(){
+    // disable submission of social login form with the enter key.  The user
+    // must click one of the social login buttons which sets the form's action
+    $('form#social_login').on('keyup keypress', function(e) {
+      var keyCode = e.keyCode || e.which;
+      if (keyCode === 13) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // set the form's action to the value of the button (the desired action path)
+    // so that we can submit the form's inputs, including any survey questions,
+    // to the correct social strategy controller action.
+    $("form#social_login button").click( function(e) {
+      var containingForm = $(this).closest("form");
+      containingForm.attr('action', this.value);
+      containingForm.submit();
+    })
+  })
+</script>

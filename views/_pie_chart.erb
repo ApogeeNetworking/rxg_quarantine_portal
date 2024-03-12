@@ -1,0 +1,7 @@
+<%
+  pie_data = pie[:data].to_a
+  data = pie_data.collect { |pd| [ "#{pd[:label]}#{" (#{pd[:display_text]})" unless pd[:display_text].blank?}", pd[:value] ] }
+%>
+<div>
+  <%= pie_chart(data, height: '100%')%>
+</div>

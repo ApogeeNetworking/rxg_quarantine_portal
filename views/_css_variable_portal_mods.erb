@@ -1,0 +1,63 @@
+<% variable_mods = (@portal_mods || []).select {|mod| mod.mod_type == 'variable'} %>
+<% if variable_mods.any? %>
+  <style>
+    :root, body.bg-light, body.bg-dark {
+  <% variable_mods.each do |mod| %>
+    <% mod.attributes.select { |k,v| k =~ /^b(s|g)_/ && v.present? }.each do |var, val| %>
+      <%
+        if val =~ /^\#/
+          valhex = val
+          parts = val.match(/^#(..)(..)(..)(..)?$/).captures.compact
+          valrgb = "#{parts[0..2].map(&:hex).join(", ")}"
+          if parts[3]
+            valopacity = (255 / parts[3].hex.to_f)
+          end
+        elsif val =~ /^rgba?\((.+)\)/
+          valrgb = $1
+          parts = $1.split(/,\s*/).map(&:to_f)
+          valrgb = parts[0..2].map(&:to_i).join(', ')
+          valhex = '#' + parts[0..2].map {|d| "%02X" % d.to_i}.join
+          if parts[3]
+            valhex += "%02X" % (255 * parts[3]).to_i
+            valopacity = parts[3]
+          end
+        end
+
+        varname = var.to_s.dasherize
+      %>
+      --<%= varname %>: <%= valhex %> !important;
+      --<%= varname %>-rgb: <%= valrgb %> !important;
+      <% if valopacity %>
+      --<%= varname %>-opacity: <%= valopacity %> !important;
+      <% end %>
+    <% end %>
+
+    <% mod.attributes.select { |k,v| k =~ /^btn_/ && v.present? }.each do |var, val| %>
+      <%
+        if var =~ /^btn_hover/
+          varname = var.to_s.dasherize.gsub(/^btn-hover/, 'btn') + ':hover'
+        else
+          varname = var.to_s.dasherize + ':not(:hover)'
+        end
+      %>
+      .<%= varname %> {
+        background-color:  <%= val %>;
+        border-color:  <%= val %>;
+      }
+    <% end %>
+  <% end %>
+    }
+  </style>
+<% end %>
+
+
+<% if mod = (@portal_mods || []).select { |mod| mod.image_to_replace == 'background_image.png' }.sample %>
+  <style>
+    body.bg-light, body.bg-dark {
+      background-image: url('<%= mod.image.url %>'),
+                        radial-gradient(circle, var(--bg-gradient-center) 0%, var(--bg-gradient-mid) 35%, var(--bg-gradient-outer) 72%) !important;
+      background-size: cover !important;
+      background-position: center !important;
+    }
+  </style>
+<% end %>

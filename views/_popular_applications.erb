@@ -1,0 +1,20 @@
+<%
+  top_n = 12
+  top_applications = 
+    PfConnectionLog.select("SUM(bytes_down + bytes_up) AS bytes", :protocol, :net_app_id)
+                   .where(expired_at: 24.hours.ago..Time.now)
+                   .where(account: @current_account_or_token)
+                   .where.not(net_app_id: nil)
+                   .where(protocol: %w( tcp udp ))
+                   .group(:protocol, :net_app_id)
+                   .order('bytes DESC')
+                   .limit(top_n)
+  applications = top_applications.map do |result|
+    next unless netapp = result.net_app
+    {
+      url: netapp.name,
+      bytes: result.bytes
+    }
+  end
+%>
+<%= render_portal_partial('destinations_summary', locals: {title: _('Popular Applications'), destinations: destinations}) %>

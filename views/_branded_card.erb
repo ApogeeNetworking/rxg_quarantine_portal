@@ -1,0 +1,35 @@
+<%
+  partial ||= nil
+  content ||= nil
+  title ||= nil
+  title_classes ||= nil
+  classes ||= 'col-12 col-sm-9 col-md-8 col-lg-6 col-xxl-4 text-center'
+%>
+<div class="row justify-content-center align-items-center">
+  <div class="text-center pt-3">
+    <% if title %>
+      <%= "<h2 class=\"#{title_classes}\">#{title}</h2>".html_safe %>
+    <% else %>
+      <%= navbar_brand(url: { action: :index }) do %>
+        <%= portal_inline_svg('default_icon.svg', style: 'max-width: 200px;', class: "mb-2 branding-logo #{'dark-mode' if @dark_mode}") %>
+      <% end # navbar_brand %>
+    <% end # if title %>
+  </div>
+</div>
+<div class="row justify-content-center">
+  <%= card(class: "#{classes}  #{portal_card_classes}") do %>
+    <% if partial %>
+      <%= partial %>
+    <% else %>
+      <%= card_body do %>
+        <% if content %>
+          <%= content.html_safe %>
+        <% else %>
+          <%= card_title do %>
+            <%= _('No Content Given') %>
+          <% end # card_title %>
+        <% end # card_body %>
+      <% end # if content %>
+    <% end # if partial %>
+  <% end # card %>
+</div>

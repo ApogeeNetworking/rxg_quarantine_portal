@@ -1,0 +1,55 @@
+<%= card(class: "#{portal_card_classes} mb-3") do %>
+  <%= card_body do %>
+    <%= card_title(class: 'mb-5 d-flex justify-content-between') do %>
+      <%= _('Account Profile') %>
+      <div>
+        <%= button(_('Edit Payment Method'), url: {action: 'payment_method_edit'}, link: true, context: :primary) %>
+        <%= render_portal_partial "generate_api_key" %>
+      </div>
+    <% end # card_title %>
+    <%= bootstrap_form_for( @current_account, as: :current_account, url: { action: :current_account_update },
+      html: { name: 'account_form', id: 'account_form' }) do |f| %>
+      <div class="row mb-5 g-5">
+        <div class="col-12 col-xxl-7">
+          <%= card(class: portal_card_classes) do %>
+            <%= card_body do %>
+              <%= render_portal_partial('account_form', locals: { f: f }) %>
+            <% end # card_body %>
+          <% end # card %>
+        </div>
+        <div class="col-12 col-xxl-5">
+          <div class="row h-100 flex-column align-items-center justify-content-start">
+            <div class="col-12 mb-2">
+              <%= card(class: "h-100 #{portal_card_classes}") do %>
+                <%= card_body do %>
+                  <fieldset>
+                    <legend><%= _('Coupon') %></legend>
+                    <%= label :code, _('Do you have a coupon code?'), class: 'visually-hidden' %>
+                    <%= text_field_tag(:code, params[:code], {placeholder: _('Do you have a coupon code?'), class: portal_form_input_classes})%>
+                  </fieldset>
+                <% end # card_body %>
+              <% end # card %>
+            </div>
+        </div>
+      </div>
+      <%= f.form_group(class: 'row px-5') do %>
+        <div class="col-12 text-end">
+          <%= button(url: {action: :index}, context: :secondary) do %>
+            <%= _('Cancel') %>
+          <% end # button %>
+          <%= f.submit(_('Update'), class: portal_submit_classes, data: { disable_with: _('Please wait...') }) %>
+        </div>
+      <% end # form_group %>
+      <%= render_portal_partial('form_errors', locals: { f: f }) %>
+    <% end # bootstrap_form_for %>
+    <% if @current_account_or_token.allow_sub_account_creation? %>
+      <div class="col-12">
+        <%= card(class: portal_card_classes) do %>
+          <%= card_body do %>
+            <%= render_portal_partial 'sub_account' %>
+          <% end # card_body %>
+        <% end # card %>
+      </div>
+    <% end # if @current_account_or_token.allow_sub_account_creation? %>
+  <% end # card_body %>
+<% end # card %>

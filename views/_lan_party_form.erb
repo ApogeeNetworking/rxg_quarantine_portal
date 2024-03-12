@@ -1,0 +1,47 @@
+<%
+  lan_party ||= LanParty.new 
+  expires_at_field_id = (lan_party.persisted? ? "lan_party_#{lan_party.id}_expires_at" : 'new_lan_party_expires_at')
+  no_expiration_field_id = (lan_party.persisted? ? "lan_party_#{lan_party.id}_no_expiration" : 'new_lan_party_no_expiration')
+%>
+<%= bootstrap_form_for(lan_party,
+  url: { action: lan_party.persisted? ? :update_lan_party : :create_lan_party, id: lan_party.id }) do |f| %>
+  <fieldset>
+    <legend><%= _('Party Details') %></legend>
+    <%= f.form_group do %>
+        <%= f.text_field :name, label: _('Party Name...'), label_as_placeholder: true, class: portal_form_input_classes(large: true) %>
+    <% end # form_group %>
+    <%= f.form_group do %>
+        <%= f.text_area :description, label: _('Description (optional)'), label_as_placeholder: true, class: portal_form_input_classes(large:true) %>
+    <% end # form_group %>
+    <%= f.form_group do %>
+        <%= f.text_field :password, label: _('Password (optional, 8 char min, case-sensitive)'), label_as_placeholder: true, class: portal_form_input_classes(large:true), minlength: 8, autocomplete: 'new-password', autocorrect: 'off', autocapitalize: 'off', spellcheck: 'off' %>
+    <% end # form_group %>
+  </fieldset>
+  <fieldset>
+    <legend><%= _('Expiration') %></legend>
+    <%= f.form_group do %>
+      <%= f.datetime_field :expires_at, {value: (lan_party.no_expiration? ? '' : ( lan_party.expires_at || DateTime.now.advance(hours: 1) ).strftime('%FT%R')), label: _('Expiration'), label_as_placeholder: true, class: portal_form_input_classes(large:true), id: expires_at_field_id} %>
+    <% end # form_group %>
+    <%= f.form_group do %>
+      <%= f.check_box(:no_expiration, { id: no_expiration_field_id, label: _('No expiration (remain active until deleted)'), class: "mb-4" }) %>
+    <% end # form_group %>
+  </fieldset>
+  <%= f.submit (f.object.persisted? ? _('Update LAN Party') : _('Create LAN Party')), class: portal_submit_classes, data: { disable_with: _('Please wait...') } %>
+<% end %>
+<script>
+  $(function() {
+    // clear the datetime picker if the user checks the no expiration checkbox
+    $("#<%= no_expiration_field_id %>").change(function(){
+      var isChecked = $(this).is(":checked");
+      if (isChecked) {
+        $("#<%= expires_at_field_id %>").val('');
+      }
+    })
+    $("#<%= expires_at_field_id %>").change(function(e){
+      // clear the no expiration checkbox if the user selected a date
+      if ($(e).val()) {
+        $("#<%= no_expiration_field_id %>").prop( "checked", false );
+      }
+    });
+  })
+</script>

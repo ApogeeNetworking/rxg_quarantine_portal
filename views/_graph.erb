@@ -1,0 +1,22 @@
+<%
+  legend ||= false
+  points ||= false
+  horizontal ||= false
+  parsed_graph = JSON.parse(graph.gen_export_json || '{}', object_class: OpenStruct)
+  meta = parsed_graph.try(:meta).to_h
+  data ||= (graph.bar_chart? ? parsed_graph : parsed_graph.try(:data).to_a)
+  labels ||= []
+
+  chart_locals ||= {
+    data: data,
+    meta: meta,
+    area: graph.area_chart?,
+    legend: legend,
+    points: points,
+    unit: graph.unit,
+    labels: labels,
+    horizontal: horizontal,
+  }
+
+%>
+<%= render_portal_partial((graph.bar_chart? ? 'bar_chart' : 'line_chart'), locals: chart_locals) %>

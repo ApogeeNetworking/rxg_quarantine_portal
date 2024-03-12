@@ -1,0 +1,14 @@
+<%
+  destination ||= Hash.new
+  icon ||= destination[:icon]
+  url ||= (destination[:url] || '')
+  max_url_length ||= 24
+  icon ||= url.strip.downcase.truncate(max_url_length)
+  bytes ||= (destination[:bytes] || 0)
+  color ||= (destination[:color] || nil)
+%>
+<div class="col d-flex flex-column justify-content-center align-items-center">
+  <span style="<%= "color: #{color};" if color %>"><%= fa_brand_icon(icon: icon, size: :x2) %></span>
+  <span class="text-center"><%= url.truncate(24) %></span>
+  <small class="text-center"><%= number_to_human_size(bytes) %></small>
+</div>

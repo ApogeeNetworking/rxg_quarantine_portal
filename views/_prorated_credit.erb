@@ -1,0 +1,17 @@
+<% classes ||= nil %>
+<% if @current_account_or_token %>
+  <% if @current_account_or_token.prorated_credit.to_f > 0 %>
+    <div class="col-12 my-2">
+      <%= card(class: "#{portal_card_classes} #{classes}") do %>
+        <%= card_body do %>
+          <%= card_title do %>
+            <%= _('Prorated Credit') %>
+          <% end #card_title %>
+          <%= card_text do %>
+            <%= (_('You have approximately <strong> %{time} units of credit </strong> that will be automatically applied to your next purchase.' ) % { time: @current_account_or_token.prorated_credit.to_i }).html_safe   %>
+          <% end # card_text %>
+        <% end # card_body %>
+      <% end # card %>
+    </div>
+  <% end # if @current_account_or_token.prorated_credit.to_f > 0 %>
+<% end # if @current_account_or_token %>

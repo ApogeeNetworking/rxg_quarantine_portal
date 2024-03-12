@@ -1,0 +1,31 @@
+<%
+  deviceless_sessions ||= []
+
+  headers = [
+    { data: { priority: 4 }, text: _('Login Time') },
+    { data: { priority: 2 }, text: _('IP address') },
+    { data: { priority: 3 }, text: _('Browser') },
+    { data: { priority: 1,  orderable: false } },
+  ]
+%>
+<%= card_title do %>
+  <%= _('Sessions Without a Device') %>
+<% end # card_title %>
+
+<%= table(dark: @dark_mode, id: "sessionless-device-table", small: true, striped: true, class: "w-100") do %>
+  <%= table_header do %>
+    <%= table_row do %>
+      <% headers.each do |header| %>
+        <%= table_heading(data: header[:data]) do %>
+          <%= header[:text] %>
+        <% end # table_heading %>
+      <% end # headers.each %>
+    <% end # table_row %>
+  <% end # table_header  %>
+  <%= table_body do %>
+    <% deviceless_sessions.each do |ls| %>
+      <%= render_portal_partial('session_detail_row', locals: {ls: ls}) %>
+    <% end %>
+  <% end # table_body %>
+<% end # table %>
+

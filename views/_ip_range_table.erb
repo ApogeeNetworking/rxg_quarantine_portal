@@ -1,0 +1,56 @@
+<%= card_title do %>
+  <%= _('IP Range') %>
+<% end # card_title %>
+
+<%= table(dark: @dark_mode, id: "ip-range-table", small: true, striped: true, class: "w-100") do %>
+  <%= table_body do %>
+    <%= table_row do %>
+      <%= table_data do %>
+        Network
+      <% end %>
+      <%= table_data do %>
+        <%= ip_address_range[:network] %>/<%= ip_address_range[:cidr_bits] %>
+      <% end %>
+    <% end %>
+
+    <% unless ip_address_range[:ip6] %>
+      <%= table_row do %>
+        <%= table_data do %>
+          Subnet Mask
+        <% end %>
+        <%= table_data do %>
+          <%= ip_address_range[:netmask] %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= table_row do %>
+      <%= table_data do %>
+        Gateway
+      <% end %>
+      <%= table_data do %>
+        <%= ip_address_range[:gateway] %>
+      <% end %>
+    <% end %>
+
+    <%= table_row do %>
+      <%= table_data do %>
+        Usable IP Range
+      <% end %>
+      <%= table_data do %>
+        <%= ip_address_range[:range_start] %> - <%= ip_address_range[:range_end] %>
+      <% end %>
+    <% end %>
+
+    <%= table_row do %>
+      <%= table_data do %>
+        DHCP Range
+      <% end %>
+      <%= table_data do %>
+        <%= ip_address_range[:dhcp_start] %> - <%= ip_address_range[:dhcp_end] %>
+      <% end %>
+    <% end %>
+
+  <% end # table_body %>
+<% end # table %>
+

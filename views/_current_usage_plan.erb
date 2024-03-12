@@ -1,0 +1,37 @@
+<%
+  stores_payment_method = @current_account_or_token.usage_plan.direct_merchant && @current_account_or_token.usage_plan.direct_merchant.store_payment_methods?
+  recurring_billing_disabled = @current_account_or_token && @current_account_or_token.usage_plan.try(:recurring_method) != "none" && @current_account_or_token.bill_at.nil?
+%>
+<h4 class="text-center"><%= _('Current Usage Plan') %></h4>
+<% if @current_account_or_token.usage_plan %>
+    <div class="shadow-sm">
+      <%= render_portal_partial('usage_plan', object: @current_account_or_token.usage_plan) %>
+    </div>
+      <% if stores_payment_method %>
+        <% if @current_account_or_token.payment_method %>
+          <div class="col-12">
+            <p class="text-center text-danger mx-auto">
+              <%= _('Current payment method:') %>
+              <%= link_to @current_account_or_token.payment_method.cc_display_number,
+                action: :payment_method_edit %>
+              &nbsp;&nbsp;
+              <%= link_to _('Delete'), { action: :payment_method_delete, method: :delete },
+                data: { confirm: _('Delete payment method?') } %>
+            </p>
+          </div>
+        <% else %>
+          <p>
+            <%= _('You currently do not have an active payment method. You may %{link}.' %
+            {link: (link_to _('create one now'), action: :payment_method_edit)}).html_safe %>
+          </p>
+        <% end # if @current_account_or_token.payment_method %>
+        <% if recurring_billing_disabled %>
+          <div class="col-12">
+            <%= (_('Recurring billing has been disabled.  When your usage expires, you will no longer be able to access the internet.  %{link} to extend your usage.', ) % { link: link_to(_('Purchase more usage'), {action: 'usage_plan_list'}, class: 'text-primary')  }).html_safe %>
+          </div>
+        <% end # if recurring_billing_disabled %>
+      <% end # if stores_payment_method %>
+<% else %>
+  <strong> <%= _('You are not currently subscribed to a Usage Plan.') %> </strong>
+  <%= link_to _('Buy Now'), {action: :usage_plan_list}, class: 'text-primary d-block mx-auto my-2 text-center' %>
+<% end # if @current_account_or_token.usage_plan %>

@@ -1,0 +1,13 @@
+<%
+  theme = @dark_mode ? :dark : :light
+  background = @dark_mode ? :dark : :light
+  brand = @dark_mode ? 'dark-mode' : ''
+%>
+<%= navbar(theme: theme, background: background, container: {size: :xs}) do %>
+  <%= navbar_toggler(class: ['border-0', 'd-lg-none'], target: '.offcanvas', toggle: 'offcanvas') do %>
+    <%= navbar_toggler_icon %>
+  <% end %>
+  <%= navbar_brand(url: { action: :index }, class: ['ms-lg-5']) do %>
+    <%= portal_inline_svg('default_icon.svg', style: 'height: 50px; max-width: 200px', class: brand) %>
+  <% end %>
+<% end %>

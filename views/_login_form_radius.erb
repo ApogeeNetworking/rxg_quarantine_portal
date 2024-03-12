@@ -1,0 +1,13 @@
+<%
+  title ||= _('Radius Login')
+  hide_title ||= false
+%>
+<%= bootstrap_form_tag(url: {action: :radius_login}, id: 'radius_login') do |f| %>
+  <fieldset class="d-flex flex-column h-100">
+    <legend class="<%= 'visually-hidden' if hide_title %>"><%= title %></legend>
+    <%= f.text_field(:login, {value: [:login], title: _('Login'), label: _('Login'), label_as_placeholder: true, class: portal_form_input_classes, autocorrect: :off, autocapitalize: :off}) %>
+    <%= f.password_field(:password, {title: _('Password'), label: _('Password'), label_as_placeholder: true, class: portal_form_input_classes}) %>
+    <%= f.select(:radius_realm, options_for_select(RadiusRealm.portal_auth.collect { |rr| [ rr.name, rr.id ] }), {label: _('RADIUS Realm'), skip_label: true}, {class: portal_form_input_classes}) %>
+    <%= f.submit(_('Sign In'), class: "mt-auto #{portal_login_submit_classes}", data: { disable_with: _('Please wait...') }) %>
+  </fieldset>
+<% end %>

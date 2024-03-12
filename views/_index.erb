@@ -1,0 +1,8 @@
+<% if @logged_in %>
+  <%= render_portal_partial 'session_info_complete' %>
+<% else %>
+  <%
+    partial ||= 'splash'
+  %>
+  <%= render_portal_partial partial %>
+<% end %>

@@ -1,0 +1,11 @@
+<%= modal(id: "update_lan_party_#{party.id}", scrollable: true, size: :xl, aria_labelled_by: "update_lan_party_#{party.id}_title", content: { class: ["#{'bg-dark' if @dark_mode}"] }) do %>
+  <%= modal_header(close: @dark_mode ? 'light' : true) do %>
+    <%= modal_title(id: "update_lan_party_#{party.id}_title") do %>
+      <%= _('Edit LAN Party') %>
+    <% end # modal_title %>
+  <% end #modal_header %>
+  <%= modal_body do %>
+    <%= render_portal_partial 'lan_party_form', locals: {lan_party: party} %>
+  <% end #modal_body %>
+  <%= modal_footer %>
+<% end # modal %>

@@ -1,0 +1,36 @@
+<%= instruments_dialog(type: dialog[:color], dialog_id: "#{dialog[:name]}_dialog") do %>
+  <%= render_portal_partial dialog_partial_path("dialog_color_reason"), locals: { dialog: dialog } %>
+    <% if (title = dialog[:title]) %>
+      <h4><%= title %></h4>
+    <% end # if (title = dialog[:title]) %>
+    <div class="row mb-3 text-center">
+      <% dialog[:pie_charts].to_a.in_groups_of(4) do |group| %>
+        <% col_class = 
+              case group.compact.length
+                when 1
+                  'col-12'
+                when 2
+                  'col-6'
+                when 3
+                  'col-4'
+                when 4
+                  'col-6 col-md-3'
+              end %>
+        <% group.compact.each do |pie| %>
+          <div class="<%= col_class %>">
+            <% if pie[:title] %>
+              <h5><%= pie[:title] %></h5>
+            <% end # if pie[:title] %>
+            <%= render_portal_partial(dialog_partial_path("pie_chart"), locals: { pie: pie }) %>
+          </div>
+        <% end # group.compact.each %>
+      <% end # dialog[:pie_charts].to_a.in_groups_of(4) %>
+    </div>
+    <div class="row mb-3 text-start">
+      <div>
+        <%= table(dark: @dark_mode, small: true, class: 'w-100') do %>
+          <%= render_portal_partial(dialog_partial_path("dialog_footer"), locals: { dialog: dialog }) %>
+        <% end # table %>
+      </div>
+    </div>
+<% end # instruments_dialog(type: dialog[:color], dialog_id: "#{dialog[:name]}_dialog") %>

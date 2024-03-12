@@ -1,0 +1,30 @@
+<%
+  payment_method ||= PaymentMethod.new
+  brand ||= payment_method.is_stripe_token? ? 'stripe' : (payment_method.credit_card.try(:brand) unless payment_method.is_token?)
+  size ||= :x3
+  style = :brands
+  icon = nil
+
+  icon = case brand
+  when 'stripe'
+    'cc-stripe'
+  when 'visa'
+    'cc-visa'
+  when 'master'
+    'cc-mastercard'
+  when 'discover'
+    'cc-discover'
+  when 'american_express'
+    'cc-amex'
+  when 'diners_club'
+    'cc-diners-club'
+  when 'jcb'
+    'cc-jcb'
+  when 'paypal'
+    'cc-paypal'
+  else
+    style = :solid
+    'credit-card'
+  end
+%>
+<%= fa_icon(style: style, icon: icon, size: size) %>

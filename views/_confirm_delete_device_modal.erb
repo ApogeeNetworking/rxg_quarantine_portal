@@ -1,0 +1,38 @@
+<%=
+  modal(id: 'confirm-delete-device-modal', scrollable: true, size: :lg, aria_labelled_by: 'delete-title', content: {
+    class: ["#{'bg-dark' if @dark_mode}"]
+  }) do
+%>
+  <%= modal_header(close: 'light') do %>
+    <%= modal_title(id: 'delete-title') do %>
+      <%= _('Delete This Device') %>
+    <% end # modal_title %>
+  <% end #modal_header %>
+  <%= modal_body do %>
+    <span><%= (_('Are you sure you want to delete %{name} (%{mac})?') % { name: '<span id="delete-device-name"></span>', mac: '<span id="delete-device-mac"></span>' }).html_safe %></span>
+  <% end #modal_body %>
+  <%= modal_footer do %>
+    <%= modal_footer_close_button(_('Cancel')) %>
+    <%= bootstrap_form_tag(url: {action: :delete_device}, id: 'delete_device') do |f| %>
+      <%= f.hidden_field(:device_id, id: 'delete-device-id') %>
+      <%= f.submit(_('Delete'), class: 'btn btn-danger', data: {disable_with: _('Please Wait...')}) %>
+    <% end # bootstrap_form_tag %>
+  <% end # modal_footer %>
+<% end # modal %>
+
+<script>
+  function handleDeleteDeviceModalShown(event) {
+    const link = $(event.relatedTarget)
+    const id = link.data('id')
+    const name = link.data('name')
+    const mac = link.data('mac')
+
+    $('#delete-device-name').html(name)
+    $('#delete-device-mac').html(mac)
+    $('#delete-device-id').val(id)
+  }
+  
+  $(() => {
+    $('#confirm-delete-device-modal').on('shown.bs.modal', handleDeleteDeviceModalShown)
+  })
+</script>

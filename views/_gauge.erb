@@ -1,0 +1,8 @@
+<%
+
+
+%>
+
+
+
+<%= pie_chart(gauge[:data], legend: false, donut: true, height: '100%', colors: ['#2C7BE5', '#6C757D'], bytes: gauge[:bytes], rotation: 180, circumference: 180, library: {cutout: '75%', elements: {arc: {borderWidth: 0}}})%>

@@ -1,0 +1,15 @@
+<%= table_footer do %>
+  <%= table_row do %>
+    <%= table_data do %>
+      <small class="text-muted" id="<%= dialog[:name] %>_graph_link">
+        <%= dialog_graph_link(dialog)%>
+      </small>
+    <% end # table_data %>
+    
+    <%= table_data do %>
+      <small class="text-muted" id="<%= dialog[:name] %>_summary_text">
+        <%= dialog[:summary].to_s.html_safe %>
+      </small>
+    <% end # table_data %>
+  <% end # table_row %>
+<% end # table_footer %>

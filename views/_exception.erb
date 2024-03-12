@@ -1,0 +1,18 @@
+<%= card_body do %>
+  <%= card_title do %>
+    <%= _('Fatal Exception') %>
+  <% end # card_title %>
+  <% if exception %>
+    <%= card_text do %>
+      <%= _('We encountered an unexpected error while processing your request. Please contact technical support if the problem persists.') %>
+    <% end # card_text %>
+    <%= card_text do %>
+      <%= _('The error was...') %>
+    <% end # card_text %>
+    <h3><%= exception.class %>: <%= h(exception.message) %></h3>
+  <% else %>
+    <%= card_text do %>
+      <%= _('The exception handling view was invoked, but no exception was raised.  Please contact the systems administrator or support team.') %>
+    <% end # card_text %>
+  <% end %>
+<% end # card_body %>

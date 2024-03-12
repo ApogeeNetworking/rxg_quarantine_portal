@@ -1,0 +1,20 @@
+<% icon_style = :solid %>
+<% if dialog[:color] && dialog[:color_reason] %>
+  <% klass = '' %>
+<% else %>
+  <% klass = 'hidden' %>
+<% end %>
+<div class="dialog_color_reason <%= klass %>" id="<%= dialog[:name] %>_color_reason">
+  <%= link_to dialog[:color_reason_action], 
+    { class: dialog[:color_reason_action] ? '' : 'no_href',
+      data: {  html: "true", toggle: 'tooltip', container: 'body' },
+      title: dialog[:color_reason] } do %>
+    <% if dialog[:color] == 'red' %>
+      <%= fa_icon(icon: 'exclamation-circle', style: icon_style) %>
+    <% elsif dialog[:color] == 'yellow' %>
+      <%= fa_icon(icon: 'info-circle', style: icon_style) %>
+    <% else %>
+      <%= fa_icon(icon: nil, style: icon_style) %>
+    <% end %>
+  <% end %>
+</div>

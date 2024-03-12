@@ -1,0 +1,109 @@
+<%= card_body do %>
+  <%= card_title do %>
+    <%= _('Already Logged In') %>
+  <% end # card_title %>
+  <% if @existing_login_sessions.to_a.length >= 1 %>
+    <%= card_text do %>
+      <strong>
+        <%= _('You have reached the maximum number of active devices allowed for this account.') %>
+      </strong>
+    <% end # card_text %>
+    <%= card_text do %>
+      <% ls_count = @existing_login_sessions.to_a.count %>
+      <%= (n_('You currently have <strong class="rg-branding-primary">1 active device</strong> being used to acquire Internet access.', 'You currently have <strong class="rg-branding-primary">%{ls_count} active devices</strong> being used to acquire Internet access.', ls_count) % { ls_count: ls_count }).html_safe %>
+    <% end # card_text %>
+    <%= card_text do %>
+      <%= _('If you would like to reuse an existing connection click the button next to the desired session below.') %>
+    <% end # card_text %>
+    <%= card_text do %>
+      <%= _('Reusing an existing connection will disable Internet access for the device currently using the connection and log you in.') %>
+    <% end # card_text %>
+    <h3 class="text-center"> <%= _('Active Sessions') %> </h3>
+    <%= table(dark: @dark_mode, striped: true, hover: true, small: true, id: 'sessions-table', class: 'w-100') do %>
+    <% 
+      headers = [
+        { priority: 1, content: _('Logged-in') },
+        { priority: 2, content: _('IP address') },
+        { priority: 3, content: _('MAC address') },
+        { priority: 4, content: _('Hostname') },
+        { priority: 5, content: _('Device') },
+        { priority: 1 },
+      ]
+    %>
+    <%= table_header do %>
+      <%= table_row do %>
+        <% headers.each do |header| %>
+          <%= table_heading(scope: :col) do %>
+            <%= header[:content] %>
+          <% end # table_heading %>
+        <% end # headers.each %>
+      <% end # table_row %>
+    <% end # table_header  %>
+    <% @existing_login_sessions.to_a.sort_by {|ls| ls.updated_at }.each do |ls| %>
+      <%
+        cells = [
+           l(ls.updated_at),
+           ls.ip,
+           ls.mac,
+           ls.hostname,
+           Mac.vendor_for_mac(ls.mac) || _('unknown'),
+           button_to(_('Reuse'), { action: :account_login, account_id: @account.id, login: @account.login, password: @account.crypted_password, seize_existing_login_session_id: ls.id, survey_questions: @survey_questions }, class: portal_login_submit_classes(large: false), data: { disable_with: _('Please wait...') }),
+        ]
+      %>
+      <%= table_row do %>
+        <% cells.each do |cell| %>
+          <%= cell.to_s.html_safe %>
+        <% end # cells.each %>
+      <% end # table_row %>
+      <% end # @existing_login_sessions.to_a.sort_by {|ls| ls.updated_at }.each %>
+    <% end # table %>
+    <%= card_text do %>
+      <%= _('You are coming from IP address %{ip} MAC address %{mac} hostname %{hostname}.') % { ip: client_ip, mac: client_mac || _('unknown'), hostname: client_hostname || _('unknown') } %>
+    <% end # card_text %>
+    <script>
+      $(() => {
+        const sessionsTable = $('#sessions-table').DataTable({
+          paging: false,
+          searching: false,
+          ordering: false,
+          responsive: true,
+        })
+      })
+    </script>
+  <% else %>
+    <%= card_text do %>
+      <%= (_('Your account is <strong class="rg-branding-primary">already logged in</strong> from IP address <strong class="rg-branding-primary">%{ip}</strong> MAC address <strong class="rg-branding-primary">%{mac}</strong> hostname <strong class="rg-branding-primary">%{hostname}</strong>.') % { ip: @existing_login_session.ip, mac: @existing_login_session.mac || _('unknown'), hostname: @existing_login_session.hostname || _('unknown') }).html_safe %>
+    <% end # card_text %>
+    <% if vendor = Mac.vendor_for_mac(@existing_login_session.mac) %>
+      <%= card_text do %>
+        <%= (_('The device using your login is manufactured by <strong class="rg-branding-primary">%{vendor}</strong>.') % { vendor: vendor }).html_safe %>
+      <% end # card_text %>
+    <% end # if vendor = Mac.vendor_for_mac(@existing_login_session.mac) %>
+    <%= card_text do %>
+      <%= (_('This existing session started on %{date}, which was <strong class="rg-branding-primary">%{time}</strong> ago.') % { date: l(@existing_login_session.created_at), time: time_ago_in_words(@existing_login_session.created_at, highest_measures: 2) }).html_safe %>
+    <% end # card_text %>
+    <%= card_text do %>
+      <%= (_('You are coming from IP address <strong class="rg-branding-primary">%{ip} MAC address %{mac} hostname %{hostname}<strong>.') % { ip: client_ip, mac: client_mac || _('unknown'), hostname: client_hostname || _('unknown') }).html_safe %>
+    </p class="card-text">
+    <% if @existing_login_session.mac == client_mac %>
+      <%= card_text do %>
+        <%= _('The device using your login has the same MAC address as you, which probably means your IP address has changed since you last logged in, and that it is safe to continue.') %>
+      <% end # card_text %>
+    <% end # if @existing_login_session.mac == client_mac %>
+    <%= card_text do %>
+      <%= _('Clicking continue will log you in and disconnect the device that is already using your login. Are you sure you want to continue?') %>
+    <% end # card_text %>
+    <p>
+      <%= button_to(_('Continue logging in'), { action: :account_login,
+      account_id: @account.id, login: @account.login, password: @account.crypted_password,
+      seize_existing_login_session: true,
+      survey_questions: @survey_questions }, class: portal_login_submit_classes,
+      data: { disable_with: _('Please wait...') }) %>
+    <% end # card_text %>
+  <% end # if @existing_login_sessions.to_a.length >= 1 %>
+  <% if @account.pms_guest %>
+    <%= card_text do %>
+      <%= (_("If you don't want to reuse an existing connection you may %{link} to support more simultaneous devices.") % { link: link_to('upgrade your plan', action: :pms_guest_purchase, RN: @account.pms_guest.room, GN: @account.pms_guest.name) }).html_safe %>
+    <% end # card_text %>
+  <% end # if @account.pms_guest %>
+<% end # card_body %>

@@ -1,0 +1,13 @@
+<%= instruments_dialog(type: dialog[:color], dialog_id: "#{dialog[:name]}_dialog") do %>
+  <%= render_portal_partial(dialog_partial_path("dialog_color_reason"), locals: { dialog: dialog }) %>
+  <div>
+    <% if dialog[:title] %>
+      <h4><%= dialog[:title] %></h4>
+    <% end %>
+    <div class="row text-center">
+      <% dialog[:gauges].to_a.each do |gauge| %>
+        <%= render_portal_partial(dialog_partial_path("css_gauge"), locals: {gauge: gauge}) %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

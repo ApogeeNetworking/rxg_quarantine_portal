@@ -1,0 +1,131 @@
+<%= card_title do %>
+  <%= _('LAN Parties') %>
+<% end # card_title %>
+<% if @current_account_or_token.lan_parties.exists? %>
+  <%= card_subtitle do %>
+    <%= _('Received Party Invitations') %>
+  <% end # card_subtitle %>
+  <% @received_lan_party_invites.each do |party| %>
+    <% next if @current_account_or_token == party.host_account %>
+    <div class="row">
+      <div class="col-12">
+        <strong><%= _('Sender') %></strong>&nbsp;
+        <span class="text-primary"><%= party.host_account.login %></span>
+      </div>
+      <div class="col-12">
+        <strong><%= _('Name') %></strong>&nbsp;
+        <span class="rg-branding-primary"><%= party.name %></span>
+      </div>
+      <div class="col-12">
+        <strong><%= _('Accepted Devices') %></strong>&nbsp;
+        <% if party.devices.empty? %>
+          <p class="mx-2">
+            &nbsp;–&nbsp;–&nbsp;
+          </p>
+        <% else %>
+          <% party.devices.sort_by{ |d| d.account == @current_account_or_token ? 0 : 1 }.each do |device| %>
+            <%= device.account.login %> -
+            [<%= [device.name, device.mac].uniq.join(', ') %>] -
+            <%= device.ip || _('offline') %>
+            <% if device.account == @current_account_or_token %>
+              <%= link_to _('Leave'), {action: :remove_device_from_lan_party, id: device.id}, class: 'text-primary' %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+      <div class="col-12">
+        <div class="row">
+          <div class="col-6">
+            <%
+              party_full = party.host_account.party_device_limit_reached?
+              trigger_text = (party_full ? _('Party Full') : _('Accept') )
+            %>
+            <%= modal_trigger(trigger_text, href: "accept_invite_#{party.id}", disabled: party_full, class: portal_submit_classes) %>
+            <%= render_portal_partial 'accept_lan_party_invite_modal', locals: { party: party } %>
+          </div>
+          <div class="col-6">
+            <%= link_to _('Delete Invitation'), {action: :delete_lan_party_invitation, id: party.id},
+            class: portal_submit_classes %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr>
+  <% end %>
+<% end # if @current_account_or_token.lan_parties.exists? %>
+<% if @current_account_or_token.supports_lan_parties? %>
+  <%= card_subtitle do %>
+    <%= _('My LAN Parties') %>
+  <% end # card_subtitle %>
+  <% if @current_account_or_token.party_device_limit_reached? %>
+    <%= card_text do %>
+      <%= _('You have reached your party device limit.  You may not create any
+        additional LAN parties until you remove members from one or more of
+        your active LAN parties below.') %>
+    <% end # card_text %>
+  <% else %>
+    <%
+      lan_party_error_class = (@lan_party.try(:errors).to_a.any? ? 'btn-danger' : 'btn-primary')
+      modal_trigger_class = portal_submit_classes(context: lan_party_error_class)
+    %>
+    <%= modal_trigger _('Create a LAN Party'), href: 'create_lan_party_modal', class: modal_trigger_class %>
+    <%= modal_trigger _('Join a LAN Party'), href: 'join_lan_party_modal', class: portal_submit_classes %>
+    <%= render_portal_partial 'create_lan_party_modal' %>
+    <%= render_portal_partial 'join_lan_party_modal' %>
+  <% end # @current_account_or_token.party_device_limit_reached? %>
+  <% unless @hosted_lan_parties.any? %>
+    <h5 class="text-center"><%= _('No active LAN Parties') %></h5>
+  <% end %>
+  <% @hosted_lan_parties.each do |party| %>
+    <div class="row">
+      <div class="col-12">
+        <strong><%= _('Name') %></strong>&nbsp;
+        <span class="text-primary"><%= party.name %></span>
+      </div>
+      <div class="col-12">
+        <strong><%= _('Invited Users') %></strong><br>
+        <% if party.accounts.empty? %>
+            <p class="mx-2">&nbsp;–&nbsp;–&nbsp;</p>
+          <% else %>
+        <% party.accounts.each do |account| %>
+          <%= [ account.login, account.email ].compact.uniq.join(' - ') %>&nbsp;&nbsp;
+          <span><%= link_to _('Revoke'), {action: :remove_account_from_lan_party, id: party.id, account_id: account.id}, class: 'text-danger' %></span>
+          <% end %>
+        <% end %>
+      </div>
+      <div class="col-12">
+        <strong><%= _('Member Devices') %></strong><br>
+        <% if party.devices.empty? %>
+          <p class="mx-2">&nbsp;–&nbsp;–&nbsp;</p>
+        <% else %>
+          <% party.devices
+                  .sort_by{ |d| d.account_id == @current_account_or_token.id ? 0 : 1 }
+                  .each do |device| %>
+            <span class="rg-branding-primary"><%= device.account.login %></span> -
+            [<%= [device.name, device.mac].uniq.join(', ') %>] -
+            <%= device.ip || _('offline') %>
+            <%= link_to _('kick'), {action: :remove_device_from_lan_party, id: device.id}, class: 'text-danger' %>
+          <% end %>
+        <% end %>
+      </div>
+      <div class="col-12 mb-4">
+        <div class="row">
+          <div class="col-4">
+            <%= modal_trigger(_('Invite'), href: "invite_lan_party_#{party.id}", class: portal_submit_classes, disabled: @current_account_or_token.party_device_limit_reached? ) %>
+          </div>
+          <div class="col-4">
+            <% edit_context = (party.errors.any? ? 'btn-danger' : 'btn-secondary') %>
+            <%= modal_trigger(_('Edit Party'), href: "update_lan_party_#{party.id}", class: portal_submit_classes(context: edit_context)) %>
+          </div>
+          <div class="col-4">
+            <%= link_to _('Delete Party'), {action: :delete_lan_party_invitation, id: party.id},
+              { class: portal_submit_classes(context: 'btn-danger'),
+                data: { confirm: _('Deleting this party will remove all of its guests from your network.  Proceed?') } } %>
+          </div>
+        </div>
+      </div>
+      <%= render_portal_partial 'invite_lan_party_modal', locals: {party: party} %>
+      <%= render_portal_partial 'edit_lan_party_modal', locals: {party: party} %>
+    </div>
+  <% end # hosted_lan_parties.each %>
+<% end %>

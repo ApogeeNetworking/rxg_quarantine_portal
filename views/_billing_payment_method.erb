@@ -1,0 +1,55 @@
+<%
+  payment_method ||= @current_account_or_token.try(:payment_method)
+  payment_method ||= PaymentMethod.new(account: @current_account_or_token)
+  is_stripe = payment_method.is_stripe_token?
+  is_cybersource = payment_method.is_cybersource_token?
+  is_token = is_stripe || is_cybersource
+  expiration = payment_method.cc_expiration.to_date
+  expiration_month = expiration.month
+  expiration_year = expiration.year
+%>
+<%= card(class: portal_card_classes) do %>
+  <%= card_body do %>
+    <%= card_title do %>
+      <%= _('Payment Method') %>
+    <% end # card_title %>
+    <%= card(class: "col-12 col-md-6 col-xl-6 col-xxl-5 #{portal_card_classes}") do %>
+      <%= card_body do %>
+        <%= card_title(class: 'h4 mb-0') do %>
+          <%= payment_method.full_name || _('No Payment Method') %>
+        <% end # card_title %>
+        <div class="d-flex flex-column flex-sm-row justify-content-between">
+          <div class="d-flex">
+            <div class="h-100 me-2">
+              <%= render_portal_partial('credit_card_glyph', locals: { payment_method: payment_method }) %>
+            </div>
+            <div class='d-flex flex-column h-100'>
+              <%= card_text(class: 'mb-0') do %>
+                <%= (_('%{brand}****%{number}') % { brand: payment_method.credit_card.try(:brand).to_s.titleize, number: payment_method.cc_display_number.last(4) }).html_safe unless is_token %>
+                <%= _('Secured with Stripe') if is_stripe %>
+                <%= _('Secured with CyberSource') if is_cybersource %>
+              <% end # card_text %>
+              <% if expiration %>
+                <%= card_text(class: 'mb-0') do %>
+                  <%= (_('Card expires on %{month}/%{year}') % { month: expiration.month.to_s.rjust(2, '0'), year: expiration.year.to_s.last(2) }) %>
+                <% end # card_text %>
+              <% end # if expiration %>
+            </div>
+          </div>
+          <div class="row row-cols-2 flex-column flex-sm-row justify-content-start justify-content-md-around align-items-center h-100">
+            <div class="col-12 col-sm mx-1 my-3 my-sm-0 mb-md-3">
+              <%= button(class: 'w-100', url: { action: :payment_method_edit }, context: :primary, size: :lg) do %>
+                <%= _('<i class="fas fa-edit"></i><span class="visually-hidden">Edit</span>').html_safe %>
+              <% end # button %>
+            </div>
+            <div class="col-12 col-sm mx-1 mb-md-3">
+              <%= button(class: 'w-100', url:  { action: :payment_method_delete, id: @payment_method.id }, context: :danger, size: :lg, data: { confirm: _('This will remove your payment method and prevent recurring billing from taking place. You will no longer be able to use the network once your usage expires. Are you sure you want to continue?'), disable_with: _('Please wait') }) do %>
+                <%= _('<i class="fas fa-trash"></i><span class="visually-hidden">Delete</span>').html_safe %>
+              <% end # button %>
+            </div>
+          </div>
+        </div>
+      <% end # card_body %>
+    <% end # card %>
+  <% end # card_body %>
+<% end # card %>
