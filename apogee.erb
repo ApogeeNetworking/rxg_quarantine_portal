@@ -1,0 +1,101 @@
+<%
+  show_cookie_consent = !session[:cookies_accepted] &&
+  @captive_portal &&
+  @captive_portal.cookie_acceptance_required?
+
+  do_not_show_navbar_actions = [
+    'account_new',
+    'content_filter',
+    'forgot_password',
+    'forgot_password_challenge',
+    'secret_question',
+  ]
+
+  show_navbar = @logged_in && do_not_show_navbar_actions.exclude?(action_name)
+
+  content_for(:side_menu) do
+    render_portal_partial('menu') if @logged_in
+  end # content_for(:side_menu)
+
+  do_not_show_menu_actions = [
+    'account_new',
+    'content_filter',
+    'forgot_password',
+    'forgot_password_challenge',
+    'login_success',
+    'secret_question',
+  ]
+
+  login_success_no_please_wait = (action_name == 'login_success' && session[:no_please_wait] != false)
+
+  show_menu = content_for?(:side_menu) && ( do_not_show_menu_actions.exclude?(action_name) || login_success_no_please_wait )
+%>
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>">
+  <% if @wispr_access_location %>
+    <!--
+<?xml version="1.0" encoding="UTF-8"?>
+<WISPAccessGatewayParam xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.acmewisp.com/WISPAccessGatewayParam.xsd">
+  <Redirect>
+    <AccessProcedure>1.0</AccessProcedure>
+    <AccessLocation><%= @wispr_access_location.to_s %></AccessLocation>
+    <LocationName><%= @wispr_location_name.to_s %></LocationName>
+    <LoginURL><%= @wispr_login_url.to_s %></LoginURL>
+    <MessageType>100</MessageType>
+    <ResponseCode>0</ResponseCode>
+  </Redirect>
+</WISPAccessGatewayParam>
+-->
+  <% end %>
+  <head>
+    <%= portal_title_tag %>
+    <!-- scale properly on mobile devices -->
+    <meta name="viewport" content="initial-scale=1.0, width=device-width">
+    <!-- Link to this custom portal's favicon.ico -->
+    <%= portal_favicon_link_tag %>
+    <!-- Link to this custom portal's portal.css -->
+    <!-- Do not link other stylesheets here, instead add a require line to portal.css.scss.erb -->
+    <%= portal_stylesheet_link_tag %>
+    <!-- Include this custom portal's portal.js -->
+    <!-- Do not include other javascripts here, instead add a require line to portal.js.erb -->
+    <%= portal_javascript_include_tag %>
+    <!-- Include this custom portal's pack.js -->
+    <%= portal_pack_tags %>
+    <!-- cross-site request forgery protection token for forms to use -->
+    <%= csrf_meta_tag %>
+
+    <%= action_cable_meta_tag %>
+
+    <%= render_portal_partial('google_analytics') %>
+
+    <%= render_portal_partial('css_variable_portal_mods') %>
+
+  </head>
+  <body class="p-0 m-0 <%= portal_body_classes %>">
+    <%= portal_custom_css_tag %>
+      <header>
+        <%= render_portal_partial('navbar') if show_navbar %>
+        <%= render_portal_partial('flash', object: flash) %>
+        <%= render_portal_partial('cookie_consent') if show_cookie_consent %>
+      </header>
+      <%= render_portal_partial('offcanvas_menu') %>
+      <%= container(size: :fluid, class: 'd-flex flex-column flex-grow-1 px-0 w-100', style: "overflow-x: hidden") do %>
+        <div class="row g-2 h-100 align-items-center">
+          <% main_class = "col-12 h-100 #{'d-flex flex-column justify-content-center' unless show_menu}#{'col-lg-9 col-xxl-10 pe-lg-4 align-self-start' if show_menu } #{'pt-3' if show_navbar}" %>
+          <% if show_menu %>
+            <aside class="d-none d-lg-block col-3 col-xxl-2 h-100 side-menu">
+              <%= yield(:side_menu) %>
+            </aside>
+          <% end # if show_side menu %>
+          <main class="<%= main_class %>">
+            <%= yield %>
+          </main>
+        </div>
+      <% end # container %>
+      <%= render_portal_partial('footer') %>
+      <%#= render_portal_partial('development_bar') %>
+      <% if @effective_portal.try(:require_tos_inline?) %>
+        <%= render_portal_partial('terms_modal') %>
+      <% end # if @effective_portal.try(:require_tos_inline?) %>
+  </body>
+</html>

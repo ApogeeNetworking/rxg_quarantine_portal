@@ -1,0 +1,19 @@
+<svg id="chip" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 87.37 70.34">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#chip-linear-gradient);
+      }
+
+      .cls-2 {
+        fill: #fff;
+      }
+    </style>
+    <linearGradient id="chip-linear-gradient" x1="43.65" y1="68" x2="43.65" y2="2.66" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3e5a71"/>
+      <stop offset="1" stop-color="#4496e6"/>
+    </linearGradient>
+  </defs>
+  <rect id="background" class="cls-1" x="1.5" y="2.66" width="84.3" height="65.34" rx="15.83"/>
+  <path id="outline" class="cls-2 recolor-1" d="M74.07,1.78H19.73A16.54,16.54,0,0,0,3.21,18.3V55.6A16.54,16.54,0,0,0,19.73,72.12H74.07A16.54,16.54,0,0,0,90.58,55.6V18.3A16.54,16.54,0,0,0,74.07,1.78Zm0,66.9H71.34v-7.1A12.54,12.54,0,0,0,58.81,49.05H48.62V38.67H87.14V55.6A13.08,13.08,0,0,1,74.07,68.68ZM48.62,24.86H87.14V35.23H48.62Zm0,27.63H58.81a9.11,9.11,0,0,1,9.1,9.09v7.1H48.62ZM45.18,5.22v16.2H35a9.09,9.09,0,0,1-9.09-9.09V5.22Zm-22.73,0v7.11A12.55,12.55,0,0,0,35,24.86h10.2V35.23H6.65V18.3A13.1,13.1,0,0,1,19.73,5.22ZM45.18,38.67V49.05H6.65V38.67ZM6.65,52.49H45.18V68.68H19.73A13.1,13.1,0,0,1,6.65,55.6ZM87.14,21.42H48.62V5.22H74.07A13.08,13.08,0,0,1,87.14,18.3Z" transform="translate(-3.21 -1.78)"/>
+</svg>
