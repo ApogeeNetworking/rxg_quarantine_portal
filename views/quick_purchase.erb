@@ -1,0 +1,505 @@
+<%
+  this_node = FleetNode.find_by(this_node: true, manager: false)
+  this_property = this_node.try(:pms_properties).to_a.first
+%>
+
+<div class="row mb-3 justify-content-center align-items-center">
+  <div class="text-center pt-3">
+    <%= navbar_brand(url: { action: :index }) do %>
+      <%= portal_inline_svg('default_icon.svg', style: 'max-width: 200px;', class: "mb-2 branding-logo #{'dark-mode' if @dark_mode}") %>
+    <% end # navbar_brand %>
+  </div>
+</div>
+
+<%= bootstrap_form_tag(url: { action: :quick_purchase_charge },
+  html: { name: 'payment_form', id: 'payment_form', onsubmit: 'return paymentFormOnSubmit()' }) do |f| %>
+  <div class="row justify-content-around px-5">
+    <div class="col-12 col-lg-4 p-3 quick_purchase_fields">
+      <%= render_portal_partial 'quick_purchase_account_info', locals: {f: f, property: this_property} %>
+    </div>
+
+    <div class="quick-purchase-payment-fields col-12 col-lg-8 p-3">
+      <%= render_portal_partial 'quick_purchase_payment', locals: {f: f} %>
+      <div class="row justify-content-between my-2">
+        <div class="col-lg-8 quick_purchase_fields">
+          <%= render_portal_partial 'terms_checkbox' %>
+        </div>
+        <div class="col-lg-4 d-flex justify-content-end align-items-end quick_purchase_fields">
+          <%= link_to(_('Cancel'), 'index', { class: "#{portal_submit_classes(context: 'btn-secondary')} me-2 quick_purchase_fields"}) %>
+          <%= f.submit(_('Purchase'), id: 'submit_button', class: "#{portal_submit_classes} quick_purchase_fields", data: {disable_with: _('Please Wait...')}) %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<% end # form %>
+
+<% if @validation_plans.any? %>
+  <%= bootstrap_form_for(@account, as: :validation_account, url: { action: :validation_account_create }) do |f| %>
+    <div class="row justify-content-around px-5 validation_required">
+      <div class="col-12">
+        <%= card(class: "h-100 #{portal_card_classes}") do %>
+          <%= card_body do %>
+            <%= card_title do %>
+              <%= _('This Usage Plan is only available after validating an account.') %>
+            <% end # card_title %>
+            <%= f.hidden_field :usage_plan_id %>
+            <%= render_portal_partial 'validated_account_form', locals: { f: f } %>
+            <%= f.submit(_('Create Account'), id: 'validated_account_submit_button', class: "#{portal_submit_classes} ms-auto d-block", data: {disable_with: _('Please Wait...')}) %>
+          <% end # card_body %>
+        <% end # card %>
+      </div>
+    </div>
+  <% end # bootstrap_form_for %>
+<% end # @validation_plans.any? %>
+
+<% unless @payment_method.errors.empty? && @account.errors.empty? %>
+  <%=
+    modal(id: "error-messages-modal", size: :xl, centered: true, aria_labelled_by: "error-messages-title", content: {class: ["#{'bg-dark' if @dark_mode}"]}) do
+  %>
+    <%= modal_header(close: 'light') do %>
+      <%= modal_title(id: "error-messages-title") do %>
+        <%= _('There were errors with your submission.') %>
+      <% end # modal_title %>
+    <% end #modal_header %>
+    <%= modal_body do %>
+      <% unless @account.errors.empty? %>
+        <h3><%= _('Account') %></h3>
+        <div>
+          <%= error_messages_for :account %>
+        </div>
+      <% end # unless @account.errors.empty? %>
+      <% unless @payment_method.errors.empty? %>
+        <h3><%= _('Payment Method') %></h3>
+        <div>
+          <%= error_messages_for :payment_method %>
+        </div>
+      <% end # unless @payment_method.errors.empty? %>
+    <% end #modal_body %>
+    <%= modal_footer %>
+  <% end # modal %>
+  <script>
+    $(() => {
+      const myModal = new bootstrap.Modal(document.getElementById('error-messages-modal'))
+      myModal.show()
+    })
+  </script>
+<% end # unless @payment_method.errors.empty? && @account.errors.empty? %>
+
+<%= render_portal_partial 'error_modal', locals: {title: 'There were errors in your submission.'} %>
+
+<%# Methods %>
+
+<script type="text/javascript">
+
+  function scrollToElement(theElement){
+
+    let selectedPosX = 0
+    let selectedPosY = 0
+
+    while(theElement != null){
+      selectedPosX += theElement.offsetLeft
+      selectedPosY += theElement.offsetTop
+      theElement = theElement.offsetParent
+    }
+
+   window.scrollTo(selectedPosX,selectedPosY)
+  }
+
+  function enableCreditCard() {
+    $('.cc-field').prop('disabled', false)
+  }
+
+  function disableCreditCard() {
+    $('.cc-field').prop('disabled', true)
+  }
+
+  function enablePmsMethod() {
+    $('#method_pms').prop('disabled', false).show().siblings('label').show().parent().show()
+  }
+
+  function disablePmsMethod() {
+    $('#method_pms').prop('disabled', true).hide().siblings('label').hide().parent().hide()
+  }
+
+  function enableDirectMethod() {
+    $('#method_direct').prop('disabled', false).show().siblings('label').show().parent().show()
+  }
+
+  function disableDirectMethod() {
+    $('#method_direct').prop('disabled', true).hide().siblings('label').hide().parent().hide()
+  }
+
+  function enableOffsiteMethod() {
+    $('#method_offsite').prop('disabled', false).show().siblings('label').show().parent().show()
+  }
+
+  function disableOffsiteMethod() {
+    $('#method_offsite').prop('disabled', true).hide().siblings('label').hide().parent().hide()
+  }
+
+  function enableManualMethod() {
+    $('#method_manual').prop('disabled', false).show().siblings('label').show().parent().show()
+  }
+
+  function disableManualMethod() {
+    $('#method_manual').prop('disabled', true).hide().siblings('label').hide().parent().hide()
+  }
+
+  function showToken() {
+    $('.token_fields').show()
+  }
+
+  function hideToken() {
+    $('.token_fields').hide()
+  }
+
+  function hideCreditCard(shouldShowAddress) {
+    $('.payment_fields').hide()
+    if (shouldShowAddress) {
+      $('.address-form').show()
+    } else {
+      $('.address-form').hide()
+    }
+  }
+
+  function showCreditCard() {
+    $('.payment_fields').show()
+    $('.address-form').show()
+  }
+
+  function hideValidationNotice() {
+    $('#validation_notice').hide()
+  }
+
+  function showValidationNotice() {
+    $('#validation_notice').show()
+  }
+
+  function showValidationRequired() {
+    $('.validation_required').show()
+    $('.quick-purchase-payment-fields').removeClass('col-lg-8')
+    $('.quick_purchase_fields').hide()
+
+  }
+
+  function hideValidationRequired() {
+    $('.validation_required').hide()
+    $('.quick-purchase-payment-fields').addClass('col-lg-8')
+    $('.quick_purchase_fields').show()
+  }
+
+  function showPhoneValidationNotice() {
+    $('#phone_verification_notice').show()
+  }
+
+  function hidePhoneValidationNotice() {
+    $('#phone_verification_notice').hide()
+  }
+
+  function showEmailValidationNotice() {
+    $('#email_verification_notice').show()
+  }
+
+  function hideEmailValidationNotice() {
+    $('#email_verification_notice').hide()
+  }
+
+  function enableSubmit() {
+    $('#submit_button').prop('disabled', false)
+  }
+
+  function usagePlanOnChange(event) {
+    const input = $(event.target)
+    const plan_id = input.val()
+    const option = input.find(':selected')
+    if (option) {
+      $('#validation_account_usage_plan_id').val(plan_id)
+      const direct = option.data('direct')
+      const offsite = option.data('offsite')
+      const pms = option.data('pms')
+      const manual = option.data('manual-ar')
+      const free = option.data('free')
+      const token = option.data('token')
+      const emailValidationSupported = option.data('email_validation_supported')
+      const phoneValidationSupported = option.data('phone_validation_supported')
+      // Set the usage_plan_id value of the hidden field within the validated account form
+      $("#validation_account_usage_plan_id").val(plan_id)
+
+      $('.quick-purchase-usage-plan').hide()
+      $('.quick-purchase-usage-plan *').attr('disabled', true)
+      $('.quick-purchase-plan-total').hide()
+      $(`#plan-description-${plan_id}`).show()
+      $(`#plan-description-${plan_id} *`).attr('disabled', false)
+      $(`#plan-time-quota-${plan_id}`).show()
+      $(`#plan-time-quota-${plan_id} *`).attr('disabled', false)
+      $(`#plan-addons-${plan_id}`).show()
+      $(`#plan-addons-${plan_id} *`).attr('disabled', false)
+      $(`#plan-total-${plan_id}`).show()
+
+      if (direct) {
+        enableDirectMethod()
+        if (free || token) {
+          if (token) {
+            hideCreditCard(true)
+            disableCreditCard()
+            showToken()
+          } else {
+            hideCreditCard()
+            disableCreditCard()
+            hideToken()
+          }
+        } else {
+          hideToken()
+          showCreditCard()
+          enableCreditCard()
+          enableDirectMethod()
+          disableOffsiteMethod()
+          disablePmsMethod()
+        }
+        if (!offsite && !pms) {
+         $('#method_direct').prop('checked', true)
+        }
+      } else {
+        hideToken()
+        hideCreditCard()
+        disableCreditCard()
+        if (free && !pms && !offsite) {
+          // A free plan with no merchants/pms servers
+          enableDirectMethod()
+        } else {
+          disableDirectMethod()
+        }
+      }
+
+      if (offsite) {
+        enableOffsiteMethod()
+        if (!direct) {
+          hideCreditCard()
+          disableCreditCard()
+        } else {
+          showCreditCard()
+          enableCreditCard()
+        }
+        hideToken()
+        if (!direct && !pms) {
+         $('#method_offsite').prop('checked', true)
+        }
+      } else {
+        if (free && !direct && !pms) {
+          // A free plan with no merchants/pms servers
+          enableOffsiteMethod()
+        } else {
+          disableOffsiteMethod()
+        }
+      }
+
+      if (pms) {
+        enablePmsMethod()
+        hideToken()
+        if (!direct) {
+          hideCreditCard()
+          disableCreditCard()
+        } else {
+          showCreditCard()
+          enableCreditCard()
+        }
+        if (!direct && !offsite) {
+          hideCreditCard()
+          disableCreditCard()
+         $('#method_pms').prop('checked', true)
+         $('#_payment_method_first_name').prop('placeholder', '<%= _('Room Number...') %>')
+        }
+      } else {
+       $('#_payment_method_first_name').prop('placeholder', '<%= _('First Name...') %>')
+        if (free && !direct && !offsite) {
+          // A free plan with no merchants/pms servers
+          enableDirectMethod()
+         $('#method_direct').prop('checked', true)
+        } else {
+          disablePmsMethod()
+        }
+      }
+
+      if (manual) {
+        enableManualMethod()
+        if (!direct) {
+          hideCreditCard()
+          disableCreditCard()
+        } else {
+          showCreditCard()
+          enableCreditCard()
+        }
+        if (!direct && !offsite && !pms) {
+          hideCreditCard()
+          disableCreditCard()
+         $('#method_manual').prop('checked', true)
+        }
+      }
+
+      if (free || (!direct && !offsite && !token && !manual)) {
+        hideCreditCard()
+        disableCreditCard()
+        hideToken()
+        disablePmsMethod()
+        disableDirectMethod()
+        disableOffsiteMethod()
+        disableManualMethod()
+      } else {
+        if (!token && !pms && !offsite && !manual) {
+          showCreditCard()
+          enableCreditCard()
+          hideToken()
+        } else if (!token) {
+          hideToken()
+        }
+      }
+
+      if (emailValidationSupported || phoneValidationSupported) {
+        showValidationRequired()
+        if (emailValidationSupported) {
+          showEmailValidationNotice()
+        } else {
+          hideEmailValidationNotice()
+        }
+        if (phoneValidationSupported) {
+          showPhoneValidationNotice()
+        } else {
+          hidePhoneValidationNotice()
+        }
+      } else {
+        hideValidationRequired()
+      }
+      if (window.updateTotalPrice) {
+        updateTotalPrice()
+      }
+    } else {
+      hideCreditCard()
+      disableCreditCard()
+      hideToken()
+    }
+
+    $('input[type=radio][name=method]:checked').change()
+
+  }
+
+  function paymentMethodOnChange(event) {
+    const input = $(event.target)
+    const method = input.val()
+    const isDirect = (method == 'direct')
+    const isOffsite = (method == 'offsite')
+    const isPms = (method == 'pms')
+    let placeholder = ''
+    let focusField = null
+    if (isDirect || isOffsite) {
+      placeholder = '<%= _('First Name') %>'
+      focusField = '#_payment_method_cc_number'
+    } else if (isPms) {
+      placeholder = '<%= _('Room Number') %>'
+      focusField = '#_payment_method_first_name'
+    }
+    const selectedOption = $('#_usage_plan_id option:selected')
+    const token = selectedOption.data('token')
+    const free = selectedOption.data('free')
+
+    switch (method) {
+      case 'direct':
+        if (token) {
+          showToken()
+          hideCreditCard()
+          disableCreditCard()
+        } else if (!free) {
+          enableCreditCard()
+          showCreditCard()
+          hideToken()
+        }
+        break
+      case 'offsite':
+      case 'pms':
+      default:
+        hideCreditCard()
+        disableCreditCard()
+    }
+
+    if (focusField) {
+      $(focusField).focus()
+    }
+  }
+
+  function paymentFormOnSubmit(event) {
+
+    const selectedPlan = $('#_usage_plan_id option:selected')
+    const passwordField = $('#_account_password')
+    const passwordConfirmationField = $('#_account_password_confirmation')
+    const password = passwordField.val()
+    const passwordConfirmation = passwordConfirmationField.val()
+    const password_match = password === passwordConfirmation
+    const submitButton = $('#submit_button')
+
+    const qpErrors = []
+    const error_container = $('#error-body')
+
+    error_container.html('')
+
+
+    let doSubmit = true
+
+    if (!password_match) {
+      qpErrors.push("<%= _('Password does not match confirmation.') %>")
+      doSubmit = false
+      return doSubmit
+    }
+
+    if (selectedPlan.data('stripe_token') == true && doSubmit == true) {
+      stripeFormOnSubmit()
+      submitButton.prop('disabled', doSubmit)
+      // stripe handler will take care of submitting form if validation passes.
+      doSubmit = false
+    }
+    if (selectedPlan.data('cybersource_token') == true && doSubmit == true) {
+      cyberSourceFormOnSubmit()
+      submitButton.prop('disabled', doSubmit)
+      // cybersource form handler will take care of submitting form if validation passes.
+      doSubmit = false
+    }
+
+    if (doSubmit == true) {
+      submitButton.prop('disabled', doSubmit)
+    }
+
+    if (qpErrors.length > 0) {
+      const theErrors = qpErrors.map((qpError) => `<p class="text-danger">${qpError}<p>`).join("\n")
+      $('#error-body').html(theErrors)
+      $('#error-modal').modal('show')
+    }
+
+    return doSubmit
+  }
+
+  function handleUnitNumberChanged(event) {
+    const select = $(event.target)
+    const room = select.val()
+    const id = select.find(':selected').data('id')
+    $('#pms_room_id').val(id)
+  }
+
+  $(function () {
+    $('#account_address2').change(handleUnitNumberChanged)
+
+
+    const paymentMethodInput = $('input[type=radio][name=method]')
+    const usagePlanInput = $('#_usage_plan_id')
+
+    paymentMethodInput.change(paymentMethodOnChange)
+    usagePlanInput.change(usagePlanOnChange)
+
+    // trigger the change function when the page is loaded
+    usagePlanInput.change()
+
+    // Autoselect plan if there is only one plan
+    if ($('#_usage_plan_id option').length === 2) {
+      usagePlanInput.prop("selectedIndex", 1).change();
+    }
+  })
+
+</script>

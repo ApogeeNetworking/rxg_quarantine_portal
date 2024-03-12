@@ -1,0 +1,44 @@
+<%
+  macs ||= @current_account_or_token.devices.portal_visible.pluck(:mac)
+  rates = MacTrafficRate.where(mac: macs)
+  upload = rates.any? ? rates.sum(:bps_up) / rates.count : 0
+  download = rates.any? ? rates.sum(:bps_down) / rates.count : 0
+
+  graph = NetworkGraph.new(
+    name: _("Hourly Utilization"),
+    graphables: @account_or_device_graphables,
+    graph_time: @graph_time || GraphTime.new(past_time: 24, past_time_unit: 'hours'),
+    grouped_by: 'hour',
+    unit: 'bytes',
+    aggregate: true
+    )
+
+  minutes = @current_account_or_token.login_session_logs.where(login_at: Time.now - 24.hours..Time.now).sum(:minutes_online)
+
+  css_class ||= 'col'
+%>
+<div class="<%= css_class %>">
+  <%= card(class: portal_card_classes) do %>
+    <%= card_body do %>
+      <%= card_title do %>
+        <%= _('Hourly Usage Today') %>
+      <% end # card_title %>
+      <div class="mb-3">
+        <span class="display-4 me-3"><%= minutes %></span> <span><%= _('Minutes') %></span>
+      </div>
+      <div class="d-flex justify-content-between align-items-baseline border-bottom border-primary">
+        <span><%= _('Over past 24 Hours') %></span>
+        <small><%= (_('%{start} to %{end}') % { start: l(Time.now - 24.hours, format: :short) , end: l(Time.now, format: :short)}) %></small>
+      </div>
+      <div class="mb-5">
+        <%= render_portal_partial('graph', locals: {graph: graph}) %>
+      </div>
+      <%= render_portal_partial('top_consumers')%>
+    <% end # card_body %>
+    <%= card_footer(class: 'd-flex justify-content-between') do %>
+      <%= button(_('View Usage'), url: {action: :usage}, link: true, context: :primary, data: { disable_with: _('Please wait...') }) %>
+      <% count = @current_account_or_token.devices.portal_visible.count %>
+      <span class="card-text text-muted" style="line-height: 38px;"><%= _(n_('Usage Data based on <b>1 device</b>', 'Usage Data based on <b>%{count} devices</b>', count) % { count: count }).html_safe %></span>
+    <% end # card_footer %>
+  <% end # card %>
+</div>

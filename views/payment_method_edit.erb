@@ -1,0 +1,45 @@
+<div class="row mb-3">
+  <div class="col-12">
+    <%= card(class: portal_card_classes) do %>
+      <%= card_body do %>
+        <%= card_title do %>
+          <%= _('Update Payment Method') %>
+        <% end # card_title %>
+        <%= bootstrap_form_for(@payment_method, url: { action: :payment_method_update },
+              html: {
+                name: 'payment_form',
+                id: 'payment_form',
+                class: 'col-12',
+                onsubmit:
+                  (
+                    if @payment_method.is_stripe_token? ||
+                      @current_account_or_token.usage_plan.try(:is_stripe?)
+                      'return stripeFormOnSubmit()'
+                    elsif @payment_method.is_cybersource_token? ||
+                      @current_account_or_token.usage_plan.try(:is_cybersource?)
+                      'return cyberSourceFormOnSubmit()'
+                    end
+                  )
+              }.reject{|k,v| v.nil?}) do |f| %>
+            <%= render_portal_partial('payment_method_form', locals: { f: f }) %>
+            <%= f.form_group(class: 'my-3 g-3 row justify-content-between justify-content-xl-end') do %>
+              <div class="col-12 col-md-6 col-lg-5 col-xxl-3">
+                <%= f.submit(_('Update'), class: "#{portal_submit_classes} w-100 text-nowrap", data: { disable_with: _('Please wait...') }) %>
+              </div>
+              <% if @payment_method.persisted? %>
+                <div class="col-12 col-md-6 col-lg-5 col-xxl-3">
+                  <%= button(class: 'w-100', url: { action: :payment_method_delete, id: @payment_method.id }, context: :danger, nowrap: true, outline: true, data: { confirm: 'This will remove your payment method and prevent recurring billing from taking place. You will no longer be able to use the network once your usage expires. Are you sure you want to continue?', disable_with: _('Please wait...') }) do %>
+                    <%= _('Delete Payment Method') %>
+                  <% end # button %>
+                </div>
+              <% end # if @payment_method.persisted? %>
+            <% end # form_group %>
+            <%= render_portal_partial('form_errors', locals: { f: f }) %>
+        <% end # bootstrap_form_for %>
+        <%= card_link({action: :billing}) do %>
+          <%= _('Back to Billing') %>
+        <% end # card_link %>
+      <% end # card_body %>
+    <% end # card %>
+  </div>
+</div>

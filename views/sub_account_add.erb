@@ -1,0 +1,23 @@
+<div class="row mb-3">
+  <div class="col-12">
+    <%= card(class: portal_card_classes) do %>
+      <%= card_body do %>
+        <%= card_title do %>
+          <%= _('Add Sub-Account') %>
+        <% end # card_title %>
+
+        <% if @sub_account %>
+          <%= bootstrap_form_for( @sub_account, as: :account, url: { action: :sub_account_create }, html: { name: 'account_form', id: 'account_form' }) do |f| %>
+            <fieldset>
+              <%= render_portal_partial('form_errors', locals: { f: f }) %>
+
+              <div class="col-12 col-xxl-7">
+                <%= render_portal_partial 'sub_account_form_fields', locals: {f: f} %>
+              </div>
+            </fieldset>
+          <% end # bootstrap_form_tag %>
+        <% end # if @sub_account %>
+      <% end # card_body %>
+    <% end # card %>
+  </div>
+</div>

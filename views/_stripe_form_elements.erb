@@ -1,0 +1,103 @@
+<%
+  # usage plan can be set within :locals when rendering this partial, as an
+  # instance variable, or be pulled from the current account/token or from
+  # @stripe_plans, depending on what view is rendering this partial.
+  # we must find a stripe plan here or else we can't properly initialize the client JS
+  if ( usage_plan ||=
+        [ @usage_plan, @current_account_or_token.try(:usage_plan), @stripe_plans.first ]
+          .compact.select {|p| p.is_stripe?}.first
+     )
+    merchant ||= usage_plan.direct_merchant
+%>
+
+<div class="row mb-3 my-2">
+  <div class="mb-2 col-12" id="token_fields">
+    <label><span class="text-danger">*</span>Credit Card Information</label>
+    <div id="card-element">
+      <!-- A Stripe Element will be inserted here. -->
+    </div>
+    <!-- Used to display form errors. -->
+    <div id="card-errors" role="alert"></div>
+  </div>
+</div>
+<script src="<%= merchant.gateway_js_url %>"></script>
+<style>
+  /* Stripe card input field follows the initial styling of the card element */
+  #card-element {
+      box-shadow: 0px 3px 6px var(--dropShadow) !important;
+      border-radius: 5px !important;
+      background: var(--white) !important;
+      color: var(--textColor) !important;
+      padding: 0.5rem !important;
+  }
+</style>
+<script>
+  var stripe = Stripe('<%= merchant.login %>');
+  var elements = stripe.elements();
+  const style = {
+    base : {
+      fontSize: '16px',
+      fontWeight: 400,
+      color: 'white'
+    }
+  }
+  var card = elements.create('card', { hidePostalCode: true, style });
+  card.mount('#card-element');
+  $('#card-element').addClass('<%= portal_form_input_classes %>')
+
+  // Handle real-time validation errors from the card Element.
+  card.addEventListener('change', function(event) {
+    var displayError = document.getElementById('card-errors');
+    if (event.error) {
+      displayError.textContent = event.error.message;
+    } else {
+      displayError.textContent = '';
+    }
+  });
+
+
+  function stripeFormOnSubmit() {
+
+    var name          = $("#payment_method_first_name").val() + " " + $("#payment_method_last_name").val();
+    var address_line1 = $("#payment_method_address1").val();
+    var address_line2 = $("#payment_method_address2").val();
+    var address_city  = $("#payment_method_city").val();
+    var address_state = $("#payment_method_state").val();
+    var address_zip   = $("#payment_method_zip").val();
+
+    stripe.createToken(card, {
+      name: name,
+      address_line1: address_line1,
+      address_line2: address_line2,
+      address_city: address_city,
+      address_state: address_state,
+      address_zip: address_zip
+    }).then(function(result) {
+      if (result.error) {
+        // Inform the user if there was an error.
+        var errorElement = document.getElementById('card-errors');
+        errorElement.textContent = result.error.message;
+        return false;
+      } else {
+        stripeTokenHandler(result.token);
+        return false;
+      }
+    });
+    return false;
+  }
+
+  function stripeTokenHandler(token) {
+    // Insert the token ID into the form so it gets submitted to the server
+    const form = document.getElementById('payment_form');
+    const hiddenInput = document.createElement('input');
+    hiddenInput.setAttribute('type', 'hidden');
+    hiddenInput.setAttribute('name', 'stripeToken');
+    hiddenInput.setAttribute('value', token.id);
+    form.appendChild(hiddenInput);
+    // Submit the form
+    form.submit();
+  }
+</script>
+<% else %>
+  <!-- Unable to locate a suitable stripe configuration. -->
+<% end %>

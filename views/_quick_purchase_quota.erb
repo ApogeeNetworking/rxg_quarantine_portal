@@ -1,0 +1,51 @@
+<% show_optional ||= false %>
+<% if show_optional %>
+  <%= _('Quota') %>
+  <% if (usage_plan.quota_plan && !usage_plan.quota_plan.unlimited_usage_mb_up? && !usage_plan.quota_plan.unlimited_usage_mb_down?) %>
+    <b><%= _('Included with Plan:') %></b>
+    <%= number_to_human_size(usage_plan.quota_plan.usage_bytes_down.to_i) %>
+    <%= _('download') %>,
+    <%= number_to_human_size(usage_plan.quota_plan.usage_bytes_up.to_i) %>
+    <%= _('upload') %>
+    <% if usage_plan.quota_plan.rollover_usage_mb %>
+      : <%= _('existing quota is rolled-over.') %>
+    <% end %>
+    <%= render_portal_partial 'quota_plan', object: usage_plan.quota_plan, locals: {usage_plan: usage_plan, subscription: subscription} %>
+  <% elsif usage_plan.quota_plan && !usage_plan.quota_plan.price_free? %>
+    <span class="included_price_element d-none" data-price="<%= usage_plan.quota_plan.price %>"></span>
+  <% end %>
+
+      <% if usage_plan.optional_quota_plans.exists? %>
+        <b><%=  %></b>
+        <%= f.select(
+              "[#{usage_plan.id}][quota_plan_id]",
+              options_for_select(
+                [
+                  usage_plan.quota_plan ?
+                    [
+                      "#{usage_plan.quota_plan.name} (#{usage_plan.quota_plan.price_display(currency_unit: usage_plan.currency_unit)}) -- #{_('included with plan')}",
+                      usage_plan.quota_plan.id,
+                      { 'data-toggle' => "collapse", 'data-target' => "\#quota_plan_#{usage_plan.id}_#{usage_plan.quota_plan_id}" }
+                    ] : nil
+                ].compact +
+                usage_plan.optional_quota_plans.map { |quota_plan|
+                  [
+                    "#{quota_plan.name} (#{quota_plan.price_display(currency_unit: usage_plan.currency_unit)})",
+                    quota_plan.id,
+                    { 'data-toggle' => "collapse", 'data-target' => "\#quota_plan_#{usage_plan.id}_#{quota_plan.id}" }
+                  ]
+                },
+                @subscription.quota_plan_id
+              ),
+
+              { include_blank: usage_plan.quota_plan ? false : _('- No addon selected -'),
+                id: nil,
+                class: "#{portal_form_input_classes} plan_addon_toggle"
+              } ) %>
+        <% usage_plan.optional_quota_plans.each do |quota_plan| %>
+          <%= render_portal_partial 'quota_plan', object: quota_plan, locals: {usage_plan: usage_plan, subscription: subscription} %>
+        <% end %>
+      <% end %>
+<% elsif usage_plan.quota_plan && !usage_plan.quota_plan.price_free? %>
+  <span class="included_price_element d-none" data-price="<%= usage_plan.quota_plan.price %>"></span>
+<% end # if has_optional_quota_plans %>

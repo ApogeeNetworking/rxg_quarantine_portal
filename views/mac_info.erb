@@ -1,0 +1,283 @@
+
+<div class="row">
+    <div class='col-12'>
+      <h2 class='text-center'><%= _("Locating Your Device's MAC Address") %></h2>
+    </div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <h4><a class="offset_anchor" name="top"><%= _('Device Type') %></a></h4>
+    <p>
+      <%= link_to _('Apple TV'), action: 'mac_info', anchor: 'apple_tv' %><br/>
+      <%= link_to _('Google Chromecast'), action: 'mac_info', anchor: 'chromecast' %><br/>
+      <%= link_to _('Amazon Fire TV'), action: 'mac_info', anchor: 'fire_tv' %><br/>
+      <%= link_to _('Roku Player'), action: 'mac_info', anchor: 'roku' %><br/>
+      <%= link_to _('Microsoft Xbox'), action: 'mac_info', anchor: 'xbox' %><br/>
+      <%= link_to _('Sony Playstation'), action: 'mac_info', anchor: 'playstation' %><br/>
+      <%= link_to _('Nintendo'), action: 'mac_info', anchor: 'nintendo' %><br/>
+      <%= link_to _('Apple IOS (iPhone/iPad/iPod)'), action: 'mac_info', anchor: 'apple_ios' %><br/>
+      <%= link_to _('Android OS'), action: 'mac_info', anchor: 'android' %><br/>
+      <%= link_to _('Microsoft Windows Mobile'), action: 'mac_info', anchor: 'windows_mobile' %><br/>
+      <%= link_to _('Web OS'), action: 'mac_info', anchor: 'web_os' %><br/>
+      <%= link_to _('Microsoft Windows'), action: 'mac_info', anchor: 'windows' %><br/>
+      <%= link_to _('Apple Mac OS X'), action: 'mac_info', anchor: 'mac_osx' %><br/>
+      <%= link_to _('LG Smart TV'), action: 'mac_info', anchor: 'lg_tv' %><br/>
+      <%= link_to _('Vizio Smart TV'), action: 'mac_info', anchor: 'vizio_tv' %><br/>
+      <br/>
+      <%= link_to _('Go Back'), action: 'manage_devices' %>
+    </p>
+    <p><%= _('The Media Access Control (MAC) address is a unique 12-digit hexadecimal number assigned to the network interface (e.g. ethernet card) in your network-enabled device.') %></p>
+    <p>
+      <%= _('<strong>Note: </strong>Your wireless will usually need to be enabled in order to locate your MAC address. If you are not sure how to enable wireless on your device please refer to the instructions that came with your device.').html_safe %>
+    </p>
+    <h3><a class="offset_anchor" name="apple_tv"><%= _('Apple TV') %></a></h3>
+    <ol>
+      <%= _('
+      <li>To figure out the MAC address of your Apple TV, start at the main menu.</li>
+      <li>Select <strong>Settings</strong>, then select <strong>About</strong>.</li>
+      <li>Scroll down and look for <strong>Wireless ID</strong> or <strong>Ethernet ID</strong>, depending on the connection you are using.</li>
+      <li>You can also find these values on the UPC sticker on your Apple TV</li>
+      ').html_safe %>
+    </ol>
+    <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+    <h3><a class="offset_anchor" name="chromecast"><%= _('Google') %></a></h3>
+    <h4><%= _('Chromecast') %></h4>
+    <ol>
+      <%= _('
+      <li>Start by opening the Chromecast app on your computer.</li>
+      <li>If your computer is already connected to your Chromcast, click on the settings button.</li>
+      <li>The MAC address will be in the lower left corner of the settings page.</li>
+      <li>If your computer is not connected to your Chromecast, go through the setup screens.</li>
+      <li>The setup page where you choose the wireless network will contain the MAC address in the lower left corner.</li>
+      <li>Please note, that after you add the MAC address of your chromecast to your account, you will need to power cycle your chromecast and re-open the chromecast app.</li>
+      ').html_safe %>
+    </ol>
+    <h4><%= _('Home and Home Mini') %></h4>
+    <ol>
+      <%= _('
+      <li>Start by opening the Google Home app on your phone or tablet.</li>
+      <li>Select the devices <strong>icon</strong> in the upper right corner of the app.</li>
+      <li>Select the appropriate Google Home device.</li>
+      <li>Setup the device if necessary.</li>
+      <li>Select the three dots <strong>icon</strong> in the upper right corner.</li>
+      <li>Select <strong>Show MAC address</strong>, the MAC address will be displayed in the dialog.</li>
+      ') %>
+    </ol>
+    <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+    <h3><a class="offset_anchor" name="fire_tv"><%= _('Amazon') %></a></h3>
+    <h4><%= _('Fire TV / Fire TV Stick') %></h4>
+    <ol>
+      <%= _('
+      <li>From the Home screen, scroll down, click on <strong>Settings</strong>.</li>
+      <li>Scroll right, click on <strong>System</strong>.</li>
+      <li>Click on the <strong>About</strong> option.</li>
+        <li>Arrow to <strong>Network</strong>, the MAC address will be listed on this page.</li>
+        ').html_safe %>
+      </ol>
+      <h4><%= _('Echo and Echo Spot') %></h4>
+      <ol>
+        <%= _('
+        <li>Using the Amazon Alexa app from your phone or tablet.</li>
+        <li>Choose <strong>settings</strong>.</li>
+        <li>Select the appropriate Alexa device.</li>
+        <li>Setup the device if necessary.</li>
+        <li>Select <strong>About</strong>, the MAC address will be listed on this page.</li>
+        ').html_safe %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+      <h3><a class="offset_anchor" name="roku"><%= _('Roku Player') %></a></h3>
+      <ol>
+        <%= _('
+        <li>From the Home screen, select <strong>Settings</strong>.</li>
+        <li>Next select <strong>Player Info</strong>, the MAC address will be listed on this page.</li>
+        <li>This information is also listed on the back of your Roku player.</li>
+        ') %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+      <h3><a class="offset_anchor" name="xbox"><%= _('Microsoft Xbox') %></a></h3>
+      <h4><%= _('Xbox One, One S, or One X') %></h4>
+      <ol>
+        <%= _('
+        <li>From the main Xbox One homepage, select <strong>My Games & Apps</strong>.</li>
+        <li>Select <strong>Settings</strong>.</li>
+        <li>Select <strong>Network</strong>.</li>
+        <li>Select <strong>Advanced Settings</strong>.</li>
+        <li>Your MAC address will be listed on this page.</li>
+        ').html_safe %>
+      </ol>
+      <h4><%= _('Xbox 360') %></h4>
+      <ol>
+        <%= _('
+        <li>Select <strong>My Xbox</strong>.</li>
+        <li>Select <strong>System Settings</strong>.</li>
+        <li>Select <strong>Network Settings</strong>.</li>
+        <li>Select <strong>Configure Network</strong>.</li>
+        <li>Select <strong>Advanced Settings</strong> from the <strong>Additional Settings</strong> tab.</li>
+        <li>Select <strong>Alternate MAC Address</strong>.</li>
+        <li>Your MAC address will be listed on this page.</li>
+        ').html_safe %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+      <h3><a class="offset_anchor" name="playstation">Sony Playstation</a></h3>
+      <h4><%= _('Playstation 4') %></h4>
+      <ol>
+        <%= _('
+        <li>Select <strong>Settings</strong>.</li>
+        <li>Select <strong>System</strong>.</li>
+        <li>Select <strong>System Information</strong>.</li>
+        <li>Your MAC address will be listed on this page.</li>
+        ').html_safe %>
+      </ol>
+      <h4><%= _('Playstation 3') %></h4>
+      <ol>
+        <%= _('
+        <li>Select <strong>Settings</strong>.</li>
+        <li>Select <strong>System Settings</strong>.</li>
+        <li>Select <strong>System Information</strong>.</li>
+        <li>Your MAC address will be listed on this page.</li>
+        ').html_safe %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+      <h3><a class="offset_anchor" name="nintendo">Nintendo</a></h3>
+      <h4><%= _('Switch') %></h4>
+      <ol>
+        <%= _('
+        <li>From the home screen, touch the settings <strong>icon</strong>.</li>
+        <li>Select the <strong>Internet</strong> option.</li>
+        <li>The MAC address will be listed in the <strong>Connection Status</strong> portion of this page.</li>
+        ').html_safe %>
+      </ol>
+      <h4><%= _('Wii U') %></h4>
+      <ol>
+        <%= _('
+        <li>Select <strong>System Settings</strong>.</li>
+        <li>Select <strong>Internet</strong>.</li>
+        <li>Select <strong>View MAC Address</strong>.</li>
+        <li>Your MAC address will be listed on this page.</li>
+        ').html_safe %>
+      </ol>
+      <h4><%= _('Wii') %></h4>
+      <ol>
+        <%= _('
+        <li>Select <strong>Wii Settings</strong>.</li>
+        <li>Select <strong>Internet</strong>.</li>
+        <li>Select <strong>Console Settings</strong>.</li>
+        <li>Your MAC address will be listed on this page.</li>
+        ').html_safe %>
+      </ol>
+      <h4><%= _('3DSXL, 3DS, 2DS') %></h4>
+      <ol>
+        <%= _('
+        <li>Select <strong>System Settings</strong>.</li>
+        <li>Select <strong>Internet Settings</strong>.</li>
+        <li>Select <strong>Other Information</strong>.</li>
+        <li>Select <strong>Confirm MAC address</strong>.</li>
+        <li>Your MAC address will be listed on this page.</li>
+        ').html_safe %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+      <h3><a class="offset_anchor" name="apple_ios"><%= _('Apple IOS (iPhone/iPad/iPod)') %></a></h3>
+      <ol>
+        <%= _('
+        <li>To figure out the MAC address of your iPhone, start at the Home screen.</li>
+        <li>Select <strong>Settings</strong>, <strong>General</strong>, then select <strong>About</strong>.</li>
+        <li>Scroll down and look for <strong>Wi-Fi Address</strong>, that is your iPhone MAC address.</li>
+        ').html_safe %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+      <h3><a class="offset_anchor" name="android"><%= _('Android OS') %></a></h3>
+      <ol>
+        <%= _('
+        <li>From the Home screen, press <strong>Menu</strong>.</li>
+        <li>Select <strong>Settings</strong>.</li>
+        <li>Scroll down and tap <strong>About phone</strong>.</li>
+        <li>Tap <strong>Status</strong>.</li>
+        <li>Scroll down to view the <strong>Wi-Fi MAC address</strong>.</li>
+        ').html_safe %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+      <h3><a class="offset_anchor" name="windows_mobile"><%= _('Windows Mobile') %></a></h3>
+      <h4><%= _('Windows Mobile 6') %></h4>
+      <ol>
+        <%= _('
+        <li>Enable WiFi.</li>
+        <li>Click <strong>Start</strong>, <strong>Settings</strong>, <strong>Connections</strong>, <strong>WiFi Manager</strong>.</li>
+        <li>In <strong>WiFi Manager</strong>, in the bottom right-hand corner, click <strong>MENU</strong>, then select <strong>About</strong>.</li>
+        <li>The fourth item listed is MAC Address.</li>
+        ').html_safe %>
+      </ol>
+      <h4><%= _('Windows Mobile 5') %></h4>
+      <ol>
+        <%= _('
+        <li>Select <strong>Start</strong>, <strong>Settings</strong>.</li>
+        <li>Select the tab for <strong>Connections</strong>, then select <strong>Wireless LAN</strong>.</li>
+        <li>Select the <strong>Advanced</strong> tab.</li>
+        <li>The address will be listed as <strong>MAC</strong>.</li>
+        ') %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+      <h3><a class="offset_anchor" name="web_os"><%= _('Web OS') %></a></h3>
+      <ol>
+        <%= _('
+        <li>From the Launcher, select <strong>Device Info</strong>.</li>
+        <li>Tap <strong>More Info</strong>.</li>
+        <li>Select the <strong>Hardware</strong> tab.</li>
+        ').html_safe %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+      <h3><a class="offset_anchor" name="windows"><%= _('Windows XP/Vista/Windows 7 &amp; 8').html_safe %></a></h3>
+      <ol>
+        <%= _("
+        <li>Go to the <strong>Start</strong> menu and click on <strong>Run</strong> (if using Windows Vista/Windows 7, go to the <strong>Start</strong> button and use the <strong>Search</strong> field. &nbsp;For Windows 8, press the Windows <strong>Start key</strong> to open the Start screen).</li>
+        <li>Type <strong>cmd</strong> and press the <strong>Enter</strong> key on the keyboard.</li>
+        <li>At the prompt, type <strong>ipconfig /all</strong> and press <strong>Enter</strong>.</li>
+        <li>The MAC address is on the <strong>Physical Address</strong> line of the window.<br />
+          <strong>Note:</strong> Some computers have more than one ethernet adapter and the 'ipconfig' command lists all of the network adapters on the computer. Please find the one that describes your wireless card by looking at the <strong>Description</strong> field. Also note, that the physical addresses that are listed under the '<em>Tunnel adapters</em>' and/or&nbsp;'<em>Teredo Tunneling&nbsp;Pseudo-Interface</em>'&nbsp;are not valid for Wireless Passthrough.</li>
+          ").html_safe %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+      <h3><a class="offset_anchor" name="mac_osx"><%= _('Mac OS X') %></a></h3>
+      <h4><%= _('Mac OS X (10.6)') %></h4>
+      <ol>
+        <%= _('
+        <li>Go to the <strong>Apple</strong> menu and select <strong>System Preferences</strong>.</li>
+        <li>Click on the <strong>Network</strong> icon.</li>
+        <li>On the left side, click once on <strong>Airport</strong> to select it.</li>
+        <li>On the right side, nearer to the bottom, click on the <strong>Advanced</strong> button.</li>
+        <li>On the window that appears, look for <strong>Airport ID</strong> near the bottom.  The Airport ID is your mac address.</li>
+        <li>Click on <strong>Cancel</strong>. Close the window by click on the red dot in the upper left corner of the window.</li>
+        ').html_safe %>
+      </ol>
+      <h4><%= _('Mac OS X (10.7, 10.8, 10.9, 10.10)') %></h4>
+      <ol>
+        <%= _('
+        <li>Go to the <strong>Apple</strong> menu and select <strong>System Preferences</strong>.</li>
+        <li>Click on the <strong>Network</strong> icon.</li>
+        <li>On the left side, click once on <strong>Wi-Fi</strong> to select it.</li>
+        <li>On the right side, nearer to the bottom, click on the <strong>Advanced</strong> button.</li>
+        <li>On the window that appears, look for <strong>Wi-Fi Address</strong> near the bottom.  The Wi-Fi Address is your mac address.</li>
+        <li>Click on <strong>Cancel</strong>. Close the window by click on the red dot in the upper left corner of the window.</li>
+        ').html_safe %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+      <h3><a class="offset_anchor" name="lg_tv"><%= _('LG Smart TV') %></a></h3>
+      <ol>
+        <%= _('
+        <li>Check under or behind your unit or:</li>
+        <li>Go to Settings > Network.</li>
+        <li>Choose Wi-Fi Connection.</li>
+        <li>Select Advanced Wi-Fi Settings to see your MAC address.</li>
+        ').html_safe %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+      <h3><a class="offset_anchor" name="vizio_tv"><%= _('Vizio Smart TV') %></a></h3>
+      <ol>
+        <%= _('
+        <li>Press the Menu button on your remote.</li>
+        <li>Go to System and press OK on your remote.</li>
+        <li>Select Network and look for RJ45 MAC and WLAN MAC.</li>
+        ').html_safe %>
+      </ol>
+      <%= link_to _('Return to top'), action: 'mac_info', anchor: 'top' %>
+    </div>
+  </div>

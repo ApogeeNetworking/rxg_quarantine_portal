@@ -1,0 +1,63 @@
+<div class='col-12 col-md-6 col-xl-4 p-md-2'>
+  <div class="card shadow my-3 my-md-4 col-12 mx-auto session-info">
+    <div class="col-12">
+      <div class="row">
+        <div class="card shadow summary col-12 p-0" style="background-color: #0e97ed; margin-top: -20px;">
+          <%= link_to( {action: :billing} ) do %>
+            <%#= render_portal_partial 'card' %>
+          <% end %>
+        </div>
+        <div class="col-12">
+          <p class="rg-branding-primary mt-3"><b><%= _('Billing & Plans') %></b></p>
+            <p style="color: #bbb"><%= @current_account_or_token.usage_plan ? _("Your current plan is %{price}." ) % { price:@current_account_or_token.usage_plan.price_display  } : _("View your current billing details.") %></p>
+        </div>
+      </div>
+      <% if @current_account_or_token %>
+        <div class="col-12 d-none">
+          <% if @current_account_or_token.merchant_transactions.exists? %>
+            <% invoice = @current_account_or_token.merchant_transactions.last %>
+            <p class="text-center">
+              <%= _('Last invoice:') %>
+              <%= link_to "#{invoice.price_display} - #{invoice.created_at.strftime("%m-%e-%y")}",
+              { action: :invoice, id: invoice.id } %>
+            </p>
+          <% else %>
+            <p class="text-center"><%= _('No invoices') %></p>
+          <% end %>
+          <% if @current_account_or_token.bill_at && @current_account_or_token.usage_plan && !@current_account_or_token.usage_plan.price_free? %>
+            <% if @current_account_or_token.bill_at > Time.now %>
+              <div class='col-12'>
+                <p class="text-center"><%= (_('Your stored %{link} will be automatically charged on %{date}.' ) % { link: link_to(_('payment method'), { action: :payment_method_edit }), date: @current_account_or_token.bill_at.strftime("%A, %b %d %Y") }).html_safe %></p>
+              </div>
+            <% elsif @current_account_or_token.bill_at < Time.now %>
+              <div class='col-12'>
+                <p class="text-center"><%= (_('Your account failed to automatically recharge on %{date}. Please review your %{link} to ensure continued access.' ) % { date: @current_account_or_token.bill_at.strftime("%A, %b %d %Y"), link: link_to('payment method', { action: :payment_method_edit }) }).html_safe %></p>
+              </div>
+            <% end %>
+          <% end %>
+          <%= render_portal_partial 'current_usage_plan' %>
+          <div class="col-12">
+            <%= link_to _('Manage Billing'), {action: :billing}, {class: 'd-block mx-auto col-6 text-center visually-hidden', data: { disable_with: _('Please wait...') } } %>
+          </div>
+        </div>
+      <% end %>
+      <hr class="col-9 mx-auto">
+      <p class="card-info">
+        <% if  @current_account_or_token.usage_expiration %>
+          <% expiration = distance_of_time_in_words(Time.now, @current_account_or_token.usage_expiration) %>
+          <% if @current_account %>
+            <%= _('Your plan expires in %{expiration}' ) % { expiration:  expiration } %>
+          <% else %>
+            <%= _('Your usage expires in %{expiration}' ) % { expiration: expiration } %>
+          <% end %>
+        <% else %>
+          <% if @current_account %>
+            <%= _('Your plan never expires') %>
+          <% else %>
+            <%= _('Your usage never expires') %>
+          <% end %>
+        <% end %>
+      </p>
+    </div>
+  </div>
+</div>

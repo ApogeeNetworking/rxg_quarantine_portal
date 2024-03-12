@@ -1,0 +1,22 @@
+<div class="row mb-3 justify-content-center align-items-center">
+  <div class="text-center pt-3">
+    <%= navbar_brand(url: { action: :index }, :aria_labelleby => 'Home') do %>
+      <%= portal_inline_svg('default_icon.svg', style: 'max-width: 200px;', class: "mb-2 branding-logo #{'dark-mode' if @dark_mode}") %>
+    <% end # navbar_brand %>
+  </div>
+</div>
+<div class="row mb-3">
+  <div class="text-center">
+    <%= render_portal_partial('welcome_message', locals: {dynamic: true}) %>
+  </div>
+</div>
+
+<% if (rotator = Rotator.find_by_urn("#{controller_name}")) && rotator.rotatees.any? %>
+  <div class="<%= 'row' if action_name == 'index' %><%= 'd-none d-lg-block' if action_name != 'index' %>">
+    <div class="col-12 d-flex justify-content-center align-items-center">
+      <%= render_portal_partial('rotator', locals: { urn: controller_name }) %>
+    </div>
+  </div>
+<% end # if (rotator = Rotator.find_by_urn("#{controller_name}")) && rotator.rotatees.any? %>
+
+<%= render_portal_partial('login_forms_conditional') %>

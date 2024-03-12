@@ -1,0 +1,164 @@
+<%
+  has_transaction = @current_account && transaction = @current_account.merchant_transactions.find_by_id(params[:id].to_i)
+%>
+<div class="row">
+  <div class="col-12">
+    <%= card(class: portal_card_classes) do %>
+      <%= card_body do %>
+        <%= card_title do %>
+          <%= _('Invoice') %>
+        <% end # card_title %>
+        <% if has_transaction %>
+          <%= table(dark: @dark_mode) do %>
+            <%= table_body do %>
+              <%= table_row do %>
+                <%= table_data do %>
+                  <%= @current_account.payment_method.try(:full_name) %> 
+                <% end # table_data %>
+              <% end # table_row %>
+              <% if @current_account.payment_method.try(:address1) %>
+                <%= table_row do %>
+                  <%= table_data do %>
+                    <%= @current_account.payment_method.try(:address1) %>
+                    <% if @current_account.payment_method.try(:address2) %>
+                     <%= @current_account.payment_method.try(:address2) %>
+                    <% end # if @current_account.payment_method.try(:address2) %>
+                  <% end # table_data %>
+                <% end # table_row %>
+                <%= table_row do %>
+                  <%= table_data do %>
+                    <%= @current_account.payment_method.try(:city) %>, <%= @current_account.payment_method.try(:state) %> <%= @current_account.payment_method.try(:zip) %>
+                  <% end # table_data %>
+                <% end # table_row %>
+                <%= table_row do %>
+                  <%= table_data do %>
+                    <%= @current_account.payment_method.try(:phone) %>
+                  <% end # table_data %>
+                <% end # table_row %>
+              <% end # if @current_account.payment_method.try(:address1) %>
+              <%= table_row do %>
+                <%= table_data do %>
+                  <%= @current_account.payment_method.try(:email) %>
+                <% end # table_data %>
+              <% end # table_row %>
+            <% end # table_body %>
+          <% end # table %>
+         
+          <% if (subscription_or_plan = transaction.subscription || transaction.usage_plan) %>
+            <%= table(dark: @dark_mode) do %>
+              <%= table_header do %>
+                <%= table_row do %>
+                  <%= table_heading(scope: :col) do %>
+                    <%= _('Category') %>
+                  <% end # table_heading %>
+                  <%= table_heading(scope: :col) do %>
+                    <%= _('Description') %>
+                  <% end # table_heading %>
+                  <%= table_heading(scope: :col, class: 'text-end') do %>
+                    <%= _('Price') %>
+                  <% end # table_heading %>
+                <% end # table_row %>
+              <% end # table_header  %>
+              <%= table_body do %>
+                <% if subscription_or_plan.time_plan %>
+                  <%= table_row do %>
+                    <%= table_data do %>
+                       <%= _('Time') %> 
+                       <% end # table_data %>
+                    <%= table_data do %>
+                      <%= subscription_or_plan.time_plan.name %> 
+                    <% end # table_data %>
+                    <%= table_data(class: 'text-end') do %>
+                      <%= subscription_or_plan.time_plan.price_display(currency_unit: subscription_or_plan.currency_unit) %> 
+                    <% end # table_data %>
+                  <% end # table_row %>
+                <% end %>
+                <% if subscription_or_plan.quota_plan %>
+                  <%= table_row do %>
+                    <%= table_data do %>
+                      <%= _('Quota') %> 
+                    <% end # table_data %>
+                    <%= table_data do %>
+                      <%= subscription_or_plan.quota_plan.name %> 
+                    <% end # table_data %>
+                    <%= table_data(class: 'text-end') do %>
+                      <%= subscription_or_plan.quota_plan.price_display(currency_unit: subscription_or_plan.currency_unit) %> 
+                    <% end # table_data %>
+                  <% end # table_row %>
+                <% end %>
+                <% (subscription_or_plan.try(:subscription_addons) || []).each do |subscription_addon| %>
+                  <%= table_row do %>
+                    <%= table_data do %>
+                       <%= subscription_addon.component_display %> 
+                       <% end # table_data %>
+                    <%= table_data do %>
+                       <%= subscription_addon.description %> 
+                       <% end # table_data %>
+                    <%= table_data(class: 'text-end') do %>
+                      <%= subscription_addon.price_display %> 
+                    <% end # table_data %>
+                  <% end # table_row %>
+                <% end %>
+                <%= table_row do %>
+                  <%= table_heading(scope: :row) do %>
+                    <%= _('Total') %>
+                  <% end # table_data %>
+                  <%= table_data do %>
+                    <strong><%= subscription_or_plan.name %></strong>
+                  <% end # table_data %>
+                  <%= table_data(class: 'text-end') do %>
+                    <strong><%= subscription_or_plan.price_display %></strong>
+                  <% end # table_data %>
+                <% end # table_row %>
+              <% end # table_body %>
+            <% end # table %> 
+          <% end # if (subscription_or_plan = transaction.subscription || transaction.usage_plan) %>
+
+          <%= table(dark: @dark_mode) do %>
+            <%= table_body do %>
+              <% if transaction.success %>
+                <%= table_row do %>
+                  <%= table_data do %>
+                    <%= _('Paid %{price} on %{date} ') % { price: transaction.price_display, date: transaction.created_at } %>
+                  <% end # table_data %>
+                <% end # table_row %>
+                <%= table_row do %>
+                  <%= table_data do %>
+                    <%= _('Payment submitted via client on IP %{ip} with MAC %{mac}') % { ip: transaction.ip, mac: transaction.mac } %>
+                  <% end # table_data %>
+                  <% end # table_row %>
+                  <% if transaction.ar_transaction&.wispr_data && transaction.ar_transaction.wispr_data["mac"] %>
+                    <%= table_row do %>
+                      <%= table_data do %>
+                        <%= _('Client\'s connected AP indicated to be: %{mac} ') % {mac: transaction.ar_transaction.wispr_data["mac"]} %>
+                      <% end %>
+                    <% end %>
+                  <% end %>
+              <% else %>
+                <%= table_row(context: :danger) do %>
+                  <%= table_data do %>
+                    <strong><%= _('This transaction failed with the following error:') %></strong>
+                  <% end # table_data %>
+                <% end # table_row %>
+                <%= table_row(context: :danger) do %>
+                  <%= table_data do %>
+                    <%= transaction.message %>
+                  <% end # table_data %>
+                <% end # table_row %>
+                <%= table_row(context: :danger) do %>
+                  <%= table_data do %>
+                    <%= _('Time:') %> <%= transaction.created_at %>
+                  <% end # table_data %>
+                <% end # table_row %>
+              <% end %>
+            <% end # table_body %>
+          <% end # table %>
+         
+        <% else %>
+          <strong> <%= _('Transaction not found!') %> </strong>
+        <% end # if has_transaction %>
+        <%= card_link({ action: 'billing' }, _('Back to Billing') ) %>
+      <% end # card_body %>
+    <% end # card %>
+  </div>
+</div>

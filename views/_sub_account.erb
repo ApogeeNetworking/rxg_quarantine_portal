@@ -1,0 +1,12 @@
+<%= card_title do %>
+  <%= _('Manage Sub-Accounts') %>
+<% end # card_title %>
+
+<%= link_to(_('Create Sub-Account'), { action: :sub_account_add }, {class: "#{portal_submit_classes} col-12 col-md-3 mb-3", data: { disable_with: _('Please wait...') }}) %>
+
+<% table_id ||= 'sub-account-table' %> 
+<div class="w-100 #{'bg-dark' if @dark_mode} p-2" id="<%= table_id %>">
+  <% @current_account.sub_accounts.each do |sub_account| %>
+    <%= render_portal_partial('sub_account_row', locals: {sub_account: sub_account}) %>
+  <% end %>
+</div>

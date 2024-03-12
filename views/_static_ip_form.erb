@@ -1,0 +1,9 @@
+<% save_icon = fa_icon(style: :solid, icon: 'save', size: :sm) %>
+<%= bootstrap_form_for(device, url: {action: :update_device, id: device.id}) do |f| %>
+  <div class="row">
+    <%= f.select :static_ip_id, @current_account_or_token.static_ips.pluck(:public_ip, :id), { label: _('Select a Static IP'), label_as_placeholder: true, size: :sm, wrapper: {class: 'col-8'} }, { class: portal_form_select_classes(large: false, small: true) } %>
+    <div class="col-4 mb-3">
+      <%= button(save_icon, { type: :submit, class: portal_submit_classes(large: false, small: true) }) %>
+    </div>
+  </div>
+<% end %>

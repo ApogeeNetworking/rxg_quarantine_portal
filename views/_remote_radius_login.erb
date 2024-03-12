@@ -1,0 +1,9 @@
+<%= card_body do %>
+  <%= card_title(class: 'text-center') do %>
+    <%= _('Radius Login Error') %>
+  <% end # card_title %>
+  <%= card_text(class: 'text-center') do %>
+    <%= _('We were unable to complete the login process.  Please notify support if this issue persists.') %>
+  <% end # card_text %>
+  <%= link_to(_('Try Again'), { action: :index }, { class: portal_submit_classes, data: { disable_with: _('Please wait...') } }) %>
+<% end # card_body %>

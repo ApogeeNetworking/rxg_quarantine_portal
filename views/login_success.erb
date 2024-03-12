@@ -1,0 +1,16 @@
+<%= render_portal_partial("download_wifi_profile_script") %>
+<div class='row'>
+  <div class="col-12 text-center">
+    <%= render_portal_partial('welcome_message', locals: {default: _('Login Successful'), dynamic: true}) %>
+  </div>
+</div>
+<% if @wifi_profile && (session[:wifi_username] || params[:wifi_username]) %>
+  <div class="row my-3">
+    <div class="col-12 text-center">
+      <a class="btn btn-lg btn-primary" id="downloadWifiProfileLink">
+        <%= _('Download WiFi Profile') %>
+      </a>
+    </div>
+  </div>
+<% end %>
+<%= render_portal_partial('login_success') %>

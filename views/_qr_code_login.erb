@@ -1,0 +1,34 @@
+<% show_link ||= false %>
+<% if wlan ||= nil %>
+  <%
+    ssid ||= wlan.try(:ssid)
+    enc ||= ''
+    if wlan_enc = wlan.try(:encryption)
+      case wlan_enc
+      when 'wep128'
+        enc = 'WEP'
+      when 'ccmp'
+        enc = 'WPA'
+      end
+    end
+    dpsk = (wlan.try(:authentication) == 'dpsk')
+    psk ||= (dpsk ? @current_account_or_token.pre_shared_key : wlan.try(:psk))
+    text = "WIFI:S:#{ssid};T:#{enc};P:#{psk};;".html_safe
+  %>
+  <%= card(class: portal_card_classes) do %>
+    <%= render_portal_partial('qr_code', locals: { text: text, style: 'card-img-top' }) %>
+    <%= card_header do %>
+      <%= card_title do %>
+        <%= _('QR Code Login') %>
+      <% end # card_title %>
+    <% end # card_header %>
+    <%= list_group(flush: true) do %>
+      <%= list_group_item do %>
+        <b><%= _('SSID:') %></b><%= ssid %>
+      <% end # list_group_item %>
+      <%= list_group_item do %>
+        <b><%= _('Password:') %></b><%= psk %>
+      <% end # list_group_item %>
+    <% end #list group %>
+  <% end # card %>
+<% end # if wlan ||= nil %>

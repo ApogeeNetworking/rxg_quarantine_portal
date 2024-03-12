@@ -1,0 +1,19 @@
+<%= card_body do %>
+  <%= bootstrap_form_tag(url: {action: (@usage_plans.any? ? :select_plan : :quick_purchase)}) do |f| %>
+    <fieldset>
+      <legend><%= _('Sign Up') %></legend>
+      <%= f.email_field(:email, value: params[:email], label: _('Email address'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 3, maxlength: 254, autocomplete: 'email', autocorrect: :off) %>
+      <%= f.text_field(:login, value: params[:login], label: _('Username'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 2, maxlength: 254, autocomplete: 'username', autocorrect: :off) %>
+      <%= f.form_group(class: 'row', style: 'margin-bottom: 0 !important;') do %>
+        <%= f.text_field(:first_name, value: params[:first_name], label: _('First name'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 2, maxlength: 254, autocomplete: 'given-name', autocorrect: :off, wrapper: {class: 'col-12 col-md-6'}) %>
+        <%= f.text_field(:last_name, value: params[:last_name], label: _('Last name'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 1, maxlength: 254, autocomplete: 'family-name', autocorrect: :off, wrapper: {class: 'col-12 col-md-6'}) %>
+      <% end # f.form_group %>
+      <%= f.form_group(class: 'row mb-0') do %>
+        <%= f.password_field(:password, value: params[:password], label: _('Password'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 2, maxlength: 40, autocomplete: 'new-password', autocorrect: :off, wrapper: {class: 'col-12 col-md-6'}) %>
+       <%= f.password_field(:password_confirmation, value: params[:password_confirmation], label: _('Confirmation'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 2, maxlength: 40, autocomplete: 'new-password', autocorrect: :off, wrapper: {class: 'col-12 col-md-6'}) %>
+       <% end # f.form_group %>
+      <%= render_portal_partial 'terms_checkbox' %>
+      <%= f.submit(_('Sign up'), class: 'd-block w-100 mx-auto btn-lg btn-primary', data: { disable_with: _('Please wait...') }) %>
+    </fieldset>
+  <% end # bootstrap_form_tag %>
+<% end # card_body %>

@@ -1,0 +1,5 @@
+<% if motd = @login_session.shared_credential_group.try(:motd) %>
+  <%= alert(context: :info, dismissible: true, fade: true, class: 'text-center') do %>
+    <%= motd %>
+  <% end # alert %>
+<% end # motd = @login_session.shared_credential_group.try(:motd)%>

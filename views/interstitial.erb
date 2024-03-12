@@ -1,0 +1,32 @@
+<div class="row">
+  <div class="col-12">
+    <h2 class='text-center'><%= _('Interstitial') %></h2>
+  </div>
+</div>
+<div class="row">
+  <div classs="col-12">
+    <% if in_mobile_view? %>
+      <%= render_portal_partial('rotator', locals: { urn: 'mobile' }) %>
+    <% elsif in_tablet_view? %>
+      <%= render_portal_partial('rotator', locals: { urn: 'mobile', count: 2 }) %>
+    <% else %>
+      <%= render_portal_partial('rotator', locals: { urn: 'interstitial', count: 2 }) %>
+    <% end %>
+  </div>
+</div>
+
+
+<% if params[:original_url].present? %>
+<div class="row">
+  <div id="continue" style="display: none;" class="col-12">
+  <p class="text-center">
+    <%= (_('Continue to: %{link}') % { link:link_to(params[:original_url], params[:original_url]) }).html_safe %>
+    </p>
+  </div>
+</div>
+  <script>
+    setTimeout(function(){
+      document.getElementById('continue').style.display = "block";
+    }, <%= @interstitial_redirect.try(:duration).to_i * 1000 %>);
+  </script>
+<% end %>

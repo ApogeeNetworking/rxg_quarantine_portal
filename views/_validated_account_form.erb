@@ -1,0 +1,81 @@
+<fieldset>
+    <legend><%= _('Account Info') %></legend>
+
+      <%= f.text_field :login, label: _('Login'), label_as_placeholder: true, class: portal_form_input_classes %>
+
+      <%= f.password_field :password, label: _('Password'), label_as_placeholder: true, class: portal_form_input_classes %>
+
+      <%= f.password_field :password_confirmation, label: _('Confirmation'), label_as_placeholder: true, class: portal_form_input_classes %>
+
+</fieldset>
+<fieldset>
+    <legend><%= _('Name') %></legend>
+
+      <%= f.text_field :first_name, label: _('First Name'), label_as_placeholder: true, class: portal_form_input_classes %>
+
+      <%= f.text_field :last_name, label: _('Last Name'), label_as_placeholder: true, class: portal_form_input_classes %>
+
+  <% if @validation_plans.select { |p| p.validation_method =~ /email/ }.any? %>
+    <div class="row mb-3">
+      <div class="mb-2 col-12" id="email_verification_notice"><%= _('You will receive a verification code by email prior to account activation.') %>
+        
+      </div>
+    </div>
+  <% end %>
+
+      <%= f.email_field :email, label: _('Email'), label_as_placeholder: true, class: portal_form_input_classes %>
+
+  <!--
+  <div class="row mb-3">
+    <div class="mb-2 col-12">
+      <%= f.email_field :email2, label: _('Email 2'), label_as_placeholder: true, class: portal_form_input_classes %>
+    </div>
+    </div>
+    -->
+</fieldset>
+<fieldset>
+  <legend><%= _('Address') %></legend>
+
+      <%= f.text_field :address1, label: _('Address 1'), label_as_placeholder: true, class: portal_form_input_classes %>
+
+      <%= f.text_field :address2, label: _('Address 2'), label_as_placeholder: true, class: portal_form_input_classes %>
+
+      <%= f.text_field :city, label: _('City'), label_as_placeholder: true, class: portal_form_input_classes %>
+
+      <%= f.text_field :region, label: _('State'), label_as_placeholder: true, class: portal_form_input_classes %>
+
+      <%= f.text_field :zip, label: _('Zip'), label_as_placeholder: true, class: portal_form_input_classes %>
+
+  <% if @validation_plans.select { |p| p.validation_method =~ /sms/ }.any? %>
+    <div class="row mb-3">
+      <div class="mb-2 col-12" id="phone_verification_notice">
+        <%= _('You will receive an SMS message with a verification code prior to account activation.') %>
+      </div>
+    </div>
+  <% end %>
+
+      <%= f.localized_country_select(:country, priority_countries=['US', 'CA'], {}, { class: portal_form_select_classes, required: true }) %>
+ 
+      <%= f.text_field :phone, label: _('Phone Number'), label_as_placeholder: true, class: portal_form_input_classes, required: true %>
+
+</fieldset>
+<% if @captive_portal.try(:allow_password_reset?, :secret) %>
+  <fieldset>
+    <legend><%= _('Account Recovery') %></legend>
+    <%= fields_for(@secret_question) do |f| %>
+
+          <%= f.select(:id,
+          SecretQuestion.all.collect {|f| [ f.question, f.id ] },
+          { prompt: _('Secret Question'), label: _('Secret Question'), label_as_placeholder: true, skip_label: true}, { class: "#{portal_form_select_classes} mb-2" }) %>
+
+    <% end %>
+
+        <%= fields_for(@secret_answer) do |f| %>
+          <%= f.text_field :answer, label: _('Answer'), label_as_placeholder: true, class: portal_form_input_classes %>
+    <% end %>
+  </fieldset>
+<% end %>
+<fieldset>
+  <legend><%= _('Terms and Conditions') %></legend>
+  <%= render_portal_partial 'terms_checkbox' %>
+</fieldset>

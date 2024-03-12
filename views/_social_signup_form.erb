@@ -1,0 +1,23 @@
+<%
+  title ||= _('Usage Plans')
+  hide_title ||= false
+%>
+<%= bootstrap_form_tag(url: {action: "#{omniauth_strategy.provider_type}_login", id: omniauth_strategy.id},
+                 id: "#{omniauth_strategy.provider_type}_login") do |f| %>
+  <fieldset>
+    <legend class="<%= 'visually-hidden' if hide_title %>"><%= title %></legend>
+    <% if @effective_portal && @effective_portal.omniauth_strategies.include?(omniauth_strategy) &&
+          # list non-free usage plans tied to this strategy.
+          omniauth_strategy.usage_plans.reject(&:price_free?).any? %>
+      <!-- list of available plans -->
+        <% omniauth_strategy.usage_plans.sort_by(&:price).each do |usage_plan| %>
+            <%= f.radio_button(:usage_plan_id, usage_plan.id) %>&nbsp;&nbsp;<label for="usage_plan_id_<%= usage_plan.id.to_s%>"><%= h(usage_plan.name) %></label>
+            <span><%= h(usage_plan.price_display) %></span>
+            <%# TODO: implement PlanAddon choices %>
+        <% end %>
+    <% end %>
+    <%= render_portal_partial 'survey_questions_fields' %>
+    <%= render_portal_partial('terms_checkbox', locals: { f: f }) %>
+    <%= f.button(omniauth_strategy.signup_button_text, { class: omniauth_strategy.button_class } ) %>
+  </fieldset>
+<% end %>
