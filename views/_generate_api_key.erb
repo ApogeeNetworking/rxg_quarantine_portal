@@ -1,0 +1,54 @@
+<% if @current_account %>
+  <script>
+    function generate_api_key() {
+      const button = self
+      button.disabled = true
+
+      const portal_url = location.pathname.split('/').slice(0, 3).join("/")
+      fetch(`${portal_url}/api/account/generate_api_key.json`, {method: "POST", credentials: "include"})
+        .then((response) => response.json())
+        .then((data) => {
+          document.getElementById("rawApiKey").innerText = data.api_key
+          const qr_code = document.getElementById("apiKeyQRCode")
+          qr_code.innerHTML = ""
+          new QRCode(qr_code, {
+            text: JSON.stringify({api_key: data.api_key, fqdn: data.fqdn, login: data.login}),
+            width: 211,
+            height: 211,
+          })
+          const modal = new bootstrap.Modal(document.getElementById("apiKeyModal"))
+          modal.show()
+          button.disabled = false
+        })
+    }
+  </script>
+
+  <%= button(
+    _('Generate API Key'),
+    link: true,
+    href: "#",
+    onclick: "generate_api_key()",
+  ) %>
+
+  <div class="modal fade" id="apiKeyModal">
+    <div class="modal-dialog">
+      <div class="modal-content bg-light p-3">
+        <div class="modal-header">
+          <h5 class="modal-title">Your API Key:</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" style="text-align: center">
+          <div id="api_container" style="overflow: auto">
+            <span style="font-size: .8rem; overflow-wrap: anywhere;" id="rawApiKey" ></span>
+            <i class="fas fa-copy ms-2" onclick="CopyToClipboard('rawApiKey')"></i>
+          </div>
+          <div class="mt-4 p-5">
+            <div style="display: inline-block;">
+              <div style="display: inline; text-align: center" id="apiKeyQRCode"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

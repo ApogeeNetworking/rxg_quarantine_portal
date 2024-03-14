@@ -1,0 +1,131 @@
+<%
+  login_forms = []
+  # set to true below to display create account card separately
+  separate_signup ||= false
+  always_show_create ||= false
+  # Display the signup link if this portal has at least one non-PMS plan that is either free or has a merchant configured
+  # To override this behavior pass "always_show_create: true" into the locals when rendering this partial
+  usage_plan_exists = ((always_show_create ? @usage_plans.any? : @usage_plans.find { |o| o.pms_server.nil? && (o.price_free? || o.merchants.any? || o.manual_ar?) }) || Coupon.usage_plan_access_coupons.exists?)
+
+  # To exclude any type of login or signup, just comment out the relevant 'login_forms <<' line.
+
+  # Social Logins
+  if @omniauth_strategies.any?
+    login_forms << {
+      form: render_portal_partial('login_form_social', locals: { title: _('Social Login') })
+    }
+
+    @omniauth_strategies.to_a.each do |strategy|
+      if strategy.usage_plans.any?
+        unless
+          login_forms << {
+            form: render_portal_partial('social_signup_form', locals: { omniauth_strategy: strategy, title: _('Usage Plans') })
+          }
+        end
+      end
+    end
+  end
+
+  # Shared Credential Logins
+  if @captive_portal
+    # Free Shared Credential
+    if @captive_portal.shared_credential_groups.where(credential: ['free', '', nil]).exists?
+      login_forms << {
+        form: render_portal_partial('login_form_shared_credential_free', locals: { title: _('Free Access') })
+      }
+    end
+
+    # Shared Credential
+    if @captive_portal.shared_credential_groups.where.not(credential: ['free', '', nil]).exists?
+      login_forms << {
+        form: render_portal_partial('login_form_shared_credential', locals: { title: _('Access Code') })
+      }
+    end
+
+    # Boingo
+    if scg = @captive_portal.shared_credential_groups.where.not(boingo_venue: nil).first
+      login_forms << {
+        form: render_portal_partial('login_form_boingo', locals: { scg: scg, title: _('Log in with Boingo')})
+      }
+    end
+  end
+
+  # Coupon Signup flow
+  if Coupon.joins(:usage_plans).exists?
+    login_forms << {
+      form: render_portal_partial('login_form_plans_coupon', locals: { title: _('Signup with Code') })
+    }
+  end
+
+  # Local Account Logins
+  if AccountGroup.exists?
+    # PMS Login
+    if PmsServer.exists?
+      login_forms << {
+        form: render_portal_partial('login_form_pms', locals: { title: _('Room Login') })
+      }
+    end
+
+    # Token Login
+    if Token.exists?
+      login_forms << {
+        form: render_portal_partial('login_form_token', locals: { title: _('Token Login') })
+      }
+    end
+
+    # Account Login
+    if Account.exists?
+      login_forms << {
+        form: render_portal_partial('login_form_account', locals: {create: usage_plan_exists, title: _('Log in') })
+      }
+    end
+
+    explicit_separate = usage_plan_exists && separate_signup
+    if explicit_separate || !Account.exists?
+      login_forms << {
+        form: render_portal_partial('new_account', locals: { title: _("Don't have an account?") })
+      }
+    end
+
+    # SMS Signup
+    if @sms_account_group
+      login_forms << {
+        form: render_portal_partial('sms_simple_signup_form', locals: { title: _("SMS Signup") })
+      }
+    end
+  end
+
+  # RADIUS Login
+  if RadiusRealm.portal_auth.exists?
+    login_forms << {
+      form: render_portal_partial('login_form_radius', locals: { title: _('RADIUS login') })
+    }
+  end
+
+  # LDAP Login
+  if @captive_portal.try(:ldap_domains).to_a.any?
+    login_forms << {
+      form: render_portal_partial('login_form_ldap', locals: { title: _('LDAP Login') })
+    }
+  end
+
+  if @and_agency_url.present?
+    login_forms << {
+      form: render_portal_partial('login_form_and_agency', locals: { title: _('Log in with Sponsor') })
+    }
+  end
+
+%>
+
+
+<div class="row justify-content-center row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xxl-4 px-2 px-lg-5">
+  <% login_forms.each do |lf| %>
+    <div class="col p-3">
+      <%= card(class: "login-card h-100 #{portal_card_classes}") do %>
+        <%= card_body do %>
+          <%= lf[:form] %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

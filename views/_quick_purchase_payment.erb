@@ -1,0 +1,11 @@
+<%= card(class: "h-100 #{portal_card_classes}") do %>
+  <%= card_body do %>
+    <%= render_portal_partial('quick_purchase_plan_fields', locals: {f: f}) %>
+    
+    <fieldset class="quick_purchase_fields">
+      <legend><%= _('Billing') %></legend>
+      <%= render_portal_partial('quick_purchase_billing', locals: {f: f}) %>
+      <%= render_portal_partial 'survey_questions_form' %>
+    </fieldset>
+  <% end # card_body %>
+<% end # card %>

@@ -1,0 +1,14 @@
+<%= table_row(context: (transaction.success ? nil : :danger)) do %>
+  <%= table_data(class: 'text-nowrap align-middle') do %>
+    <%= transaction.usage_plan.name %>
+  <% end # table_data %>
+  <%= table_data(class: 'text-nowrap align-middle') do %>
+    <% l(transaction.created_at, format: :long) %>
+  <% end # table_data %>
+  <%= table_data(class: 'text-nowrap text-end align-middle') do %>
+    <%= transaction.price_display %>
+  <% end # table_data %>
+  <%= table_data(class: 'text-center') do %>
+    <%= button _("<i class=\"fas fa-file-invoice\"></i> &nbsp; Details").html_safe, nowrap: true, context: :primary, size: :lg, url: { action: :invoice, id: transaction.id } %>
+  <% end # table_data %>
+<% end # table_row %>

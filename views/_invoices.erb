@@ -1,0 +1,38 @@
+<% table_id ||= 'invoices-table' %> 
+<% if @current_account && ! @current_account.merchant_transactions.empty? %>
+  <%= table(dark: @dark_mode, striped: true, hover: true, id: table_id, style: 'width: 100%;') do %>
+    <%= table_header do %>
+      <%= table_heading(scope: :col, priority: 3) do %>
+        <%= _('Usage Plan') %>
+      <% end # table_heading %>
+      <%= table_heading(scope: :col, priority: 1) do %>
+        <%= _('Invoiced at') %>
+      <% end # table_heading %>
+      <%= table_heading(scope: :col, priority: 1) do %>
+        <%= _('Amount') %>
+      <% end # table_heading %>
+      <%= table_heading(scope: :col, priority: 2, orderable: false) do %>
+        <%= '' %>
+      <% end # table_heading %>
+    <% end # table_heading %>
+    <%= table_body do %>
+      <% @current_account.merchant_transactions.each do |transaction| %>
+        <%= render_portal_partial('invoices_row', locals: { transaction: transaction }) %>
+      <% end %>
+    <% end %>
+  <% end # table %>
+  <script>
+    $(() => { 
+      const options = {
+        responsive: true,
+        searching: false,
+      }
+
+      const dataTable = $('#<%= table_id %>').dataTable(options)
+    })
+  </script>
+<% else %>
+  <p class="text-center">
+    <strong><%= _('You have no invoices.') %></strong>
+  </p>
+<% end %>

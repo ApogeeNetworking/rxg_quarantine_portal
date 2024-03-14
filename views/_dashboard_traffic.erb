@@ -1,0 +1,31 @@
+<%
+  time = @graph_time || GraphTime.new(past_time: 7, past_time_unit: 'days')
+  graph ||= NetworkGraph.new(
+    name: _("Bandwidth Usage (Past 7 Days)"),
+    # Display a plot for each Device's MAC address if the Account has more
+    # than one.
+    graphables: @account_or_device_graphables,
+    graph_time: time,
+    grouped_by: 'second',
+    unit: 'bits',
+    line_type: 'area'
+  )
+
+  macs ||= @current_account_or_token.devices.portal_visible.pluck(:mac) if @current_account_or_token
+  macs ||= []
+  totals = PfQueueLog.where(mac: macs, archived_at: time.start_time..time.end_time).group(:direction).sum(:bytes)
+  total_upload = totals['up']
+  total_download = totals['down']
+  graph_series_labels = ['Download', 'Upload']
+%>
+<%= card(class: portal_card_classes) do %>
+  <%= card_body do %>
+    <%= card_title do %>
+      <%= graph.name %>
+    <% end # card_title %>
+    <%= card_text do %>
+      <%= (_('<span class="me-3">Upload: <span class="text-primary">%{upload}</span></span> <span>Download: <span class="text-primary">%{download}</span></span>') % { upload: number_to_human_size(total_upload), download: number_to_human_size(total_download) }).html_safe %>
+    <% end # card_text %>
+    <%= render_portal_partial('graph', object: graph, locals: {labels: graph_series_labels}) %>
+  <% end # card_body %>
+<% end # card %>

@@ -1,0 +1,9 @@
+<%= bootstrap_form_tag(url: {action: :redeem_coupon}, id: 'redeem_coupon') do |f| %>
+  <fieldset>
+    <legend><%= _('Enter Code') %></legend>
+    <%= f.form_group do %>
+      <%= f.text_field(:code, {value: params[:code], label: _('Code'), label_as_placeholder: true, class: portal_form_input_classes}) %>
+    <% end # f.form_group %>
+    <%= f.submit(_('Redeem'), class: portal_submit_classes, data: { disable_with: _('Please wait...') }) %>
+  </fieldset>
+<% end %>

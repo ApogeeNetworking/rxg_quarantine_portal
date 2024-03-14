@@ -1,0 +1,84 @@
+<% 
+  graphs = [
+    NetworkGraph.new(
+      name: _("Weekly Traffic"),
+      # Display a plot for each Device's MAC address if the Account has more
+      # than one.
+      graphables: @account_or_device_graphables,
+      graph_time: @graph_time || GraphTime.new(past_time: 7, past_time_unit: 'days'),
+      grouped_by: 'second',
+      unit: 'bits'
+    ),
+    NetworkGraph.new(
+      name: _("Hourly Utilization"),
+      graphables: @account_or_device_graphables,
+      graph_time: @graph_time || GraphTime.new(past_time: 24, past_time_unit: 'hours'),
+      grouped_by: 'hour',
+      unit: 'bytes'
+    ),
+    NetworkGraph.new(
+      name: _("Daily Utilization"),
+      graphables: @account_or_device_graphables,
+      graph_time: @graph_time || GraphTime.new(past_time: 7, past_time_unit: 'days'),
+      grouped_by: 'day',
+      unit: 'bytes'
+    ),
+    SystemGraph.new(
+      name: _("Daily Logins"),
+      graphables: [ @current_account_or_token ],
+      graph_time: @graph_time || GraphTime.new(past_time: 7, past_time_unit: 'days'),
+      target: 'logins',
+      grouped_by: 'day'
+    ),
+    SystemGraph.new(
+      name: _("Connections"),
+      graphables: [ @current_account_or_token ],
+      graph_time: @graph_time || GraphTime.new(past_time: 24, past_time_unit: 'hours'),
+      target: 'states',
+      grouped_by: 'minute'
+    )
+  ]
+%>
+
+<div class="row mb-3">
+  <div class="col-12">
+    <%= card(class: portal_card_classes) do %>
+      <%= card_body do %>
+        <%= card_title do %>
+          <%= _('Network Reports') %> <%= modal_trigger(fa_icon(icon: 'cogs', style: :solid), id: 'dialog_config_button', href: 'graph-time-modal', context: :primary, link: true) %>
+        <% end # card_title %>
+        <% unless @current_account_or_token.unlimited_usage_minutes? &&
+          @current_account_or_token.unlimited_usage_mb_down? &&
+          @current_account_or_token.unlimited_usage_mb_up? &&
+          @current_account_or_token.no_usage_expiration? %>
+          <%= render_dashboard_dialogs(:account_usage_summary) %>
+        <% end %>
+        <%= render_dashboard_dialogs(:data_usage_summary) %>
+        <%= render_dashboard_dialogs(:pf_states_summary) %>
+        <%= render_dashboard_dialogs(:traffic_by_destination, truncate: 64) %>
+
+        <%= render_dashboard_dialogs(:application_usage) %>
+        <% if @current_account_or_token.triggered_event_logs.any? %>
+          <%= render_dashboard_dialogs(:event_triggers) %>
+        <% end %>
+        <%= render_portal_partial(dialog_partial_path('dashboard_graph_time_modal')) %>
+        <% graphs.each_with_index do |graph, index| %>
+          <% next if graph.graphables.blank? %>
+          <% graph.grouped_by = 'hour_of_day' if (graph.grouped_by.in?(['minute', 'hour']) && graph.graph_time.duration >= 1.week) %>
+          <div class="col-12 border rounded shadow-none chart-container my-3 py-3">
+            <div class="col-12 my-2 py-2">
+                <h4 class="mx-auto text-center"><%= graph.name %></h4>
+            </div>
+            <div class="col-12 portal-graphs-container hide-no-data my-2 py-2">
+              <%= render_portal_partial('graph', object: graph) %>
+            </div>
+          </div>
+        <% end %>
+        <% ( @device ? @device.device_port_forwards : @current_account_or_token.device_port_forwards.where.not(device: nil) ).each do |dpf| %>
+          <% params[:dpf_id] = dpf.id %>
+          <%= render_dashboard_dialogs(:port_forward_summary) %>
+        <% end %>
+      <% end # card_body %>
+    <% end # card %>
+  </div>
+</div>

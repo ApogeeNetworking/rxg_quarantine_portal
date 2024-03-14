@@ -1,0 +1,23 @@
+<%
+  bytes = %w(bits bytes).include?(unit.to_s)
+  start = meta[:start].to_i
+  step = meta[:step].to_i
+  legend ||= false
+  points ||= false
+  area ||= false
+  data ||= []
+  labels ||= []
+  branded ||= I18n.t(:pie_colors)
+  branded_colors ||= branded.present? && branded.to_s !~ /translation missing/i ? branded.split(/[\s,]+/) : false
+
+  chart_data = labels.each_with_index.collect { |label, label_index|
+    {
+      name: label,
+      data:data.each_with_index.collect { |element, index|
+       [ Time.at(start + (index * step)), element[label_index] ]
+     }.to_h
+    }
+  }
+%>
+<%= area_chart(chart_data, bytes: bytes, legend: legend, points: points, colors: branded_colors) if area %>
+<%= line_chart(chart_data, bytes: bytes, legend: legend, points: points) unless area %>

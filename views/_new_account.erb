@@ -1,0 +1,14 @@
+<%
+  title ||= _("Don't have an account?")
+  hide_title ||= false
+%>
+<%= bootstrap_form_tag(url: {action: :quick_purchase}, method: :get) do |f| %>
+  <fieldset>
+    <legend class="<%= 'visually-hidden' if hide_title %>"><%= title %></legend>
+  	<% if Coupon.usage_plan_access_coupons.exists? %>
+      <% signup_code_text = @usage_plans.any? ? _('Signup Code (Optional)') : _('Signup Code') %>
+  		<%= f.text_field(:plans_coupon, {value: session[:plans_coupon], label: signup_code_text, label_as_placeholder: true, class: portal_form_input_classes}) %>
+  	<% end %>
+    <%= f.submit(_('Create Login'), class: portal_login_submit_classes, data: {disable_with: 'Creating...'}) %>
+  </fieldset>
+<% end %>

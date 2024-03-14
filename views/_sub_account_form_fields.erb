@@ -1,0 +1,53 @@
+
+<%= f.form_group(class: 'row', style: 'margin-bottom: 0 !important;') do %>
+  <%= f.text_field(:login, label: _('Login'), class: portal_form_input_classes, minlength: 2, maxlength: 254, autocomplete: 'cc-given-name', autocorrect: :off) %>
+  <%= f.text_field(:first_name, {label: _('First name'), class: portal_form_input_classes, minlength: 2, maxlength: 254, autocomplete: 'given-name', autocorrect: :off, wrapper: {class: 'col-12 col-md-6'}}) %>
+  <%= f.text_field(:last_name, {label: _('Last name'), class: portal_form_input_classes, minlength: 1, maxlength: 254, autocomplete: 'family-name', autocorrect: :off, wrapper: {class: 'col-12 col-md-6'}}) %>
+
+  <%= f.email_field(:email, {label: _('Email address'), class: portal_form_input_classes, minlength: 3, maxlength: 254, autocomplete: 'email', autocorrect: :off, autocapitalize: :off, spellcheck: false, wrapper: {class: 'col-12 col-md-6'}}) %>
+
+  <% if f.object.persisted? %>
+    <%= card_text do %>
+      <%= (_('<span class="me-3">Password remains the same if left blank</span>')).html_safe %>
+    <% end # card_text %>
+  <% end %>
+
+  <%= f.password_field(:password, label: _('Password'), class: portal_form_input_classes, required: false, minlength: 2, maxlength: 40, autocomplete: 'new-password', autocorrect: :off, wrapper: {class: 'col-12 col-md-6'}) %>
+  <%= f.password_field(:password_confirmation, label: _('Password Confirmation'), class: portal_form_input_classes, required: false, minlength: 2, maxlength: 40, autocomplete: 'new-password', autocorrect: :off, wrapper: {class: 'col-12 col-md-6'}) %>
+
+  <%= f.text_field :pre_shared_key, label: _('WPA2 Pre-shared Key'), class: portal_form_input_classes, wrapper: {class: 'col-10 col-sm-8'} %>
+
+  <% sub_account_groups = @current_account&.usage_plan&.sub_account_groups || [] %>
+  <% if @account.allow_sub_account_creation? && sub_account_groups.any? %>
+    <%= f.select(:account_group_id, sub_account_groups.pluck(:name, :id), {include_blank: '- Select -'}, {onChange: 'ShowGroupDescription(this)'}) %>
+    <% sub_account_groups.each do |g| %>
+      <span class="group_description" id="account_group_description_<%= g.id %>" style="display: none;"><%= g.description %></span>
+    <% end %>
+  <% end %>
+<% end %>
+<%= f.form_group(class: 'row', style: 'margin-bottom: 0 !important;') do %>
+  <div class="col-12">
+    <%= f.submit(class: portal_login_submit_classes, data: { disable_with: _('Please wait...') }) %>
+  </div>
+  <div class="col-12">
+    <%= button(_('Cancel'), url: {action: :account_info}, context: :secondary, class: 'w-100') %>
+  </div>
+<% end # f.form_group %>
+
+<script>
+  function ShowGroupDescription(e = document.getElementById("account_account_group_id")) {
+    let id = e.value
+    $(".group_description").hide()
+    $("#account_group_description_" + id).show()
+  }
+  $(ShowGroupDescription())
+</script>
+<style>
+  .form-label {
+    margin-bottom: 0;
+    font-size: 14px;
+  }
+  .form-label.required {
+    font-weight: 900;
+  }
+</style>

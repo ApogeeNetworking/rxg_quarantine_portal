@@ -1,0 +1,15 @@
+<%
+  partials = [
+    'billing_info',
+    'billing_payment_method',
+    'billing_invoices',
+  ]
+%>
+
+<% partials.each do |partial| %>
+  <div class="row mb-3">
+    <div class="col-12">
+      <%= render_portal_partial(partial) %>
+    </div>
+  </div>
+<% end # partials.each %>

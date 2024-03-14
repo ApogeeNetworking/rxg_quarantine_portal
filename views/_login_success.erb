@@ -1,0 +1,61 @@
+<script type="text/javascript">
+  var please_wait_complete = false
+</script>
+<% if session[:no_please_wait] %>
+  <%= render_portal_partial 'session_info' %>
+<% else %>
+  <%= periodically_call_remote(
+    url: { action: :login_session_status, dynamic_sidebar: true }, frequency: '1',
+    condition: 'please_wait_complete == false',
+    update: 'login_session_status') %>
+  <div id="login_session_status">
+    <%= render_portal_partial 'please_wait' %>
+  </div>
+<% end %>
+<% if session[:no_please_wait] and ! in_mobile_view? %>
+  <% if Rotator.find_by_urn('postauth') %>
+    <%= render_portal_partial 'rotator', locals: { urn: 'postauth' } %>
+  <% elsif @current_account&.survey_answers %>
+    <%
+       urn ||= []
+      @current_account.survey_answers.each do |answer|
+        data = answer.answer
+        if Rotator.find_by_urn(data)
+          urn << data
+        end
+      end
+    %>
+    <%= render_portal_partial 'rotator', locals: {urn: urn} %>
+  <% end %>
+  <!-- session is online. display advertisements and sponsored search bar
+  <center>
+    <div class="twocol">
+      <div class="colleft">
+
+        <%= render_portal_partial 'rotator', locals: { urn: 'postauth' } %>
+
+      </div>
+      <div class="colright">
+        <form action="http://www.google.com/cse" id="cse-search-box" target="_blank">
+          <div>
+            <input type="hidden" name="cx" value="partner-pub-1384397025375282:u54hkkk3kwn" />
+            <input type="hidden" name="ie" value="ISO-8859-1" />
+            <input type="text" name="q" size="31" />
+            <input type="submit" name="sa" value="Search" />
+          </div>
+        </form>
+
+        <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
+
+        <br/>
+        <br/>
+
+        <%= render_portal_partial 'rotator', locals: { urn: 'mobile' } %>
+
+      </div>
+
+      <div class="colfooter"></div>
+    </div>
+  </center>
+-->
+<% end %>

@@ -1,0 +1,53 @@
+<%
+  included_addons = usage_plan.plan_addons.where(included_with_plan: true)
+  addons = usage_plan.plan_addons.where(included_with_plan: false).order(:component)
+%>
+<% if addons.exists? || included_addons.exists? %>
+  <fieldset id="plan-addons-<%= usage_plan.id %>" class="quick-purchase-usage-plan" style="display: none;" >
+    <legend><%= _('Add-ons') %></legend>
+    <% if included_addons.exists? %>
+      <% included_addons.each do |addon| %>
+        <span class="included_price_element d-none" data-price="<%= addon.fixed_price %>"></span>
+      <% end # included_addons.each %>
+    <% end # if included_addons.exists? %>
+    <% if addons.exists? %>
+      <div><%= _('Optional Addons') %></div>
+      <% addons.group_by(&:component).each do |component, addons| %>
+        <div class="addon_type price-group">
+          <h4><%= addons.first.component_display %></h4>
+
+          <% include_blank = (usage_plan.no_usage_lifetime? && usage_plan.plan_addons.of_component_type('lifetime').any?) ? false : _('- No addon selected -') %>
+          <%= f.fields_for("[#{usage_plan.id}]", subscription.usage_plan) do |upf| %>
+            <%= upf.select(:plan_addons,
+              options_for_select(
+                addons.map { |addon|
+                  [
+                    "#{addon.name} (#{addon.price_display})",
+                    addon.id,
+                    { 'data-toggle' => "collapse", 'data-target' => "\#plan_addon_options_#{usage_plan.id}_#{addon.id}" }
+                  ]
+                },
+                # the "selected" option:
+                subscription.subscription_addons.find { |sa| sa.plan_addon_id.in?( addons.collect(&:id) ) }.try(:plan_addon_id)
+              ),
+                  { include_blank: include_blank },
+                  { id: nil,
+                    class: "#{portal_form_select_classes} plan_addon_toggle",
+                    name: "usage_plan[#{usage_plan.id}][plan_addon_ids][]" } ) %>
+            <% addons.each do |addon| %>
+              <%= render_portal_partial 'plan_addon', object: addon, locals: {
+                subscription: subscription,
+                usage_plan: usage_plan
+              } %>
+            <% end %>
+            <% upf.fields_for :plan_addons do |paf| %>
+              <% plan_addon = paf.object %>
+              <%= paf.text_field :selected_quantity %>
+
+            <% end %>
+          <% end %>
+        </div>
+      <% end # addons.group_by(&:component).each %>
+    <% end # if addons.exists? %>
+  </fieldset>
+<% end # if addons.exists? || included_addons.exists? %>

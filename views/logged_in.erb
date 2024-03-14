@@ -1,0 +1,19 @@
+<div class="row">
+  <div class="col-12">
+    <h2 class='text-center'><%= _('Status') %></h2>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12 mb-4">
+    <% if @current_account %>
+      <%= render_portal_partial 'online_usage' %>
+    <% end %>
+  </div>
+  <div class="col-12">
+    <% if @current_account %>
+      <%= render_portal_partial 'current_usage_plan' %>
+    <% end %>
+  </div>
+
+</div>

@@ -1,0 +1,47 @@
+<%
+
+  # Dialog progress bars
+  top_users = PfQueueLog.order('sum_bytes DESC')
+    .where(dialog_cluster_cond)
+    .where(dialog_time_cond)
+    .where(dialog_source_cond(PfQueueLog))
+    .where.not(ip: nil)
+    .where.not(mac: nil)
+    .group(:mac)
+    .limit(10)
+    .sum(:bytes)
+
+  # Use the busiest device as the maximum
+  max_bytes = top_users.values.max
+  devices = [ ]
+  top_users.each do |mac, bytes|
+    if device = @current_account_or_token.devices.find_by(mac: mac)
+      devices << {
+        id: device.id,
+        name: device.name || device.hostname || device.mac,
+        mac: mac,
+        bytes: number_to_human_size(bytes),
+      }
+    end # device = @current_account_or_token.devices.find_by(mac: mac)
+  end # top_users.each
+
+%>
+
+<div>
+  <div class="d-flex justify-content-between align-items-baseline border-bottom border-primary">
+    <h5><%= _('Top Consumers') %></h5>
+    <span><%= _('Data') %></span>
+  </div>
+  <hr class="text-primary mt-0 mb-2">
+  <% devices.each_with_index do |device, index| %>
+    <div class="d-flex justify-content-between align-items-baseline border-bottom border-primary <%= index == devices.size - 1 ? 'pb-4' : '' %>">
+      <span><%= device[:name] || device[:hostname] %></span>
+      <span><%= number_to_human_size(device[:bytes]) %></span>
+    </div>
+  <% end # devices.each %>
+  <% if devices.empty? %>
+    <div class="d-flex justify-content-center align-items-baseline border-bottom border-primary pb-4">
+      <span class="h5 mb-2"><%= _('No Devices') %></span>
+    </div>
+  <% end # if devices.empty? %>
+</div>

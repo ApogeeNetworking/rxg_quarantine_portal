@@ -1,0 +1,34 @@
+<% if @login_session %>
+  <%= render_portal_partial 'scg_motd' %>
+  <% if @login_session.online? %>
+    <% if @current_account_or_token %>
+      <div class="row g-3 mb-3">
+        <div class="col">
+          <%= render_portal_partial('dashboard_traffic') %>
+        </div>
+      </div>
+      <%
+        bars = account_usage_summary_dialog_data(Hash.new)[:bars]
+        titles = [
+          _('Minutes'),
+          _('Expiration'),
+          _('Download'),
+          _('Upload')
+        ]
+        gauges = generate_summary_gauges_from_bars(bars, titles)
+      %>
+      <div class="row mb-3 g-3 row-cols-1 row-cols-sm-2 row-cols-lg-4">
+        <% gauges.each do |gauge| %>
+          <%= render_portal_partial('session_info_gauge', locals: {gauge: gauge}) %>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render_portal_partial 'summary_session_info_card' %>
+    <% end # if @current_account_or_token %>
+  <% else %>
+    <%= render_portal_partial 'no_online_usage' %>
+  <% end # @login_session.online %>
+<% else %>
+  <%= render_portal_partial 'not_logged_in_alert' %>
+<% end # if @login_session %>
+

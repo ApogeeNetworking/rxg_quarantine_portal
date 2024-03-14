@@ -1,0 +1,51 @@
+<%= card_body do %>
+  <%= card_title(class: "my-3") do %>
+    <%= _('Free Internet Access') %>
+  <% end # card_title %>
+  <% if @logged_in %>
+    <%= card_text do %>
+      <%= _('This page is only to be used by guests who are not already logged in.') %>
+    <% end # card_text %>
+  <% else %>
+    <% scg_credential = 'reset this to a credential that matches a shared credential group' %>
+    <% unless SharedCredentialGroup.find_by_credential(scg_credential) %>
+      <%= card_text do %>
+        <%= _('Free access via PMS authentication has not been configured by the operator of this network.') %>
+      <% end # card_text %>
+    <% else %>
+      <%= bootstrap_form_tag(url: {action: :pms_free}) do |f| %>
+        <%= table(dark: @dark_mode, small: true, class: 'w-100') do %>
+          <%= f.hidden_field(:credential, value: scg_credential) %>
+          <%= table_row do %>
+            <%= table_data do %>
+              <%= f.text_field(:RN, { value: params[:RN], minlength: 1, maxlength: 4, label: _('Room Number'), label_as_placeholder: true, class: portal_form_input_classes, autocomplete: :off, autocorrect: :off }) %>
+            <% end # table_data %>
+          <% end # table_row %>
+          <%= table_row do %>
+            <%= table_data do %>
+              <%= f.text_field(:GN, { value: params[:GN], label: _('Last name'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 1, maxlength: 254, autocomplete: 'family-name', autocorrect: :off }) %>
+              <% if @pms_free_error_A0 == :no_custom_info %>
+                <br>
+                <%= _('This reservation does not have a membership number on file.') %>
+              <% end # @pms_free_error_A0 == :no_custom_info %>
+            <% end # table_data %>
+          <% end # table_row %>
+          <!-- This section is a template for passing additional information
+          <%= table_row do %>
+            <%= table_data do %>
+              <%= text_field_tag(:A0, {value: params[:A0], maxlength: 20, label: _('Membership Number'), label_as_placeholder: true, class: portal_form_input_classes, autocomplete: :off, autocorrect: :off}) %>
+              <% if @pms_free_error_A0 == :custom_info_mismatch %>
+                <br>
+                <%= _('Membership number mismatch.') %>
+              <% end # if @pms_free_error_A0 == :custom_info_mismatch %>
+            <% end # table_data %>
+          <% end # table_row %>
+          -->
+        <% end # table %>
+        <%= f.submit(_('Sign In'),
+          class: portal_submit_classes,
+          data: { disable_with: _('Please wait...') }) %>
+      <% end # bootstrap_form_tag %>
+    <% end # unless SharedCredentialGroup.find_by_credential(scg_credential)%>
+  <% end # if @logged_in %>
+<% end # card_body %>

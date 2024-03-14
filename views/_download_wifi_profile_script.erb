@@ -1,0 +1,40 @@
+<script>
+  let wifiProfileUrl = (function() {
+    let profileUrl = (
+      new URL("download_wifi_profile", window.location.href.replace(/\/$/, ""))
+    ).href
+
+    // For windows, we need to provide a ms-settings scheme URL which refs the
+    // profile download endpoint with embedded credentials.
+    if (navigator.userAgent.indexOf("Win") !== -1) {
+      console.log("Generating profile URL for Windows...")
+      let params = {
+        wifi_username: <%= (session[:wifi_username] || params[:wifi_username]).inspect.html_safe %>,
+        wifi_password: <%= (session[:wifi_password] || params[:wifi_password]).inspect.html_safe %>,
+      }
+      // We use `encodeURIComponent` on the parameters (not the profileUrl part
+      // though for whatever reason).
+      // The example (https://provision.connectionassist.com/wba/) looks like:
+      //   ms-settings:wifi-provisioning?uri=https://provision.bsg-staging.com/profile-generator/windows.php%3FappOS%3Dwindows%26policyGroup%3D%26apiKey%3DSGRYUm9OUEkvZCtWallVTVJMT1VwdkZZVGNPOW4xaTFldWNHYitDZm1aTVVTZVd0WEV4VEdvNUVGYUVPRDl6Yw%3D%3D
+      profileUrl = `ms-settings:wifi-provisioning?uri=${profileUrl}${
+        encodeURIComponent("?" + new URLSearchParams(params))
+      }`
+    }
+
+    return profileUrl
+  })()
+
+  <% if @wifi_profile && (session[:wifi_username] || params[:wifi_username]) && @wifi_profile.auto_download %>
+    // Perform the redirect to auto-download.
+    window.addEventListener("load", function() {
+      window.location.href = wifiProfileUrl
+    })
+  <% end %>
+
+  window.addEventListener("load", function() {
+    let link
+    if (link = document.getElementById("downloadWifiProfileLink")) {
+      link.href = wifiProfileUrl
+    }
+  })
+</script>

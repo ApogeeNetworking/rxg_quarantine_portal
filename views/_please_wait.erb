@@ -1,0 +1,47 @@
+<div class="row justify-content-center align-items-center">
+  <% 
+    should_spin = true 
+    scan_fail = false
+    scan_underway = false
+    if @login_session
+      if @login_session.did_vulnerability_scan_fail == "true"
+        scan_fail = true
+        should_spin = false
+        @login_session.delete
+      elsif @login_session.is_vulnerability_scan_underway
+        scan_underway = true
+      end
+    end
+  %>
+  <%= card(class: "col-12 col-md-6 col-lg-4 p-5 #{portal_card_classes}") do |f| %>
+    <%= card_body do %>
+      <% if !scan_fail %>
+        <%= card_title(class: "text-center") do %>
+          <%= _('Login Successful') %>
+        <% end # card_title %>
+        <% if @login_session.try(:account).try(:ar_transactions).try(:last).try(:pending_admin_approval?) %>
+          <%= card_text(class: 'text-center') do %>
+            <%= _("Please wait for your transaction to be approved.  Do not disconnect from the Wi-Fi network...") %>
+          <% end # card_text %>
+        <% else %>
+          <%= card_text(class: 'text-center') do %>
+            <%= _("Please wait a moment while we establish your Internet session...") %>
+          <% end # card_text %>
+        <% end %>
+        <% if scan_underway %>
+          <%= card_text(class: 'text-center') do %>
+            <%= _("A vulnerability check is being performed...") %>
+          <% end # card_text %>
+        <% end %>
+      <% else # Scan Failed %>
+        <%= render_portal_partial('scan_failed') %>
+      <% end %>
+      <% if should_spin %>
+        <div class="text-center">
+          <%= spinner(class: 'mx-auto my-5') %>
+        </div>
+      <% end %>
+    </div>
+    <% end # card_body %>
+  <% end # card %>
+</div>

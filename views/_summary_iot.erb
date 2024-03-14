@@ -1,0 +1,45 @@
+<div class='col-12 col-md-6 p-md-2'>
+  <div class="card shadow my-3 my-md-4 col-12 mx-auto session-info">
+    <div class="col-12">
+      <div class="row">
+        <div class="card shadow summary col-12 p-0" style="background-color: #0e97ed; margin-top: -20px;">
+          <%= link_to( {action: :index} ) do %>
+            <div class="d-flex flex-row mb-2">
+              <div class='col-6 ps-0'>
+                <p class="small text-white ms-2 my-3">Total Consumption</p>
+                <%= image_tag "portal/default/iot_placeholder.svg", class: "img-fluid" %>
+              </div>
+              <div class="col-3 py-2 shadow d-flex flex-column justify-content-around text-center" style="background-color: #0e97ed;">
+                  <h2 class='text-white'>15</h2>
+                  <p class='small' style='color: #bbb'>Total Lights</p>
+              </div>
+              <div class="col-3 py-2 shadow d-flex flex-column justify-content-around text-center" style="background-color: #365b73;">
+                  <h2 class='text-white'>5</h2>
+                  <p class='small' style='color: #bbb'>Active Lights</p>
+              </div>
+            </div>
+              <div class='d-flex flex-row my-4'>
+                  <div class='col-6 ps-0'>
+                      <p class="small text-white ms-2 my-3">Rooms Consumption</p>
+                      <%= image_tag "portal/default/iot_placeholder.svg", class: "img-fluid" %>
+                  </div>
+                  <div class='col-6 d-flex flex-row justify-content-around'>
+                      <%= image_tag "portal/default/thermostat.svg", class: "img-fluid" %>
+                      <%= image_tag "portal/default/thermostat.svg", class: "img-fluid" %>
+                  </div>
+              </div>
+          <% end %>
+        </div>
+        <div class="col-12">
+          <p class="rg-branding-primary mt-3"><b>Smart Home</b></p>
+          <p style="color: #bbb;">Description of chart</p>
+        </div>
+      </div>
+      <div class="col-12">
+        <%= link_to 'IoT', {action: :index}, {class: 'd-block mx-auto col-6 text-center visually-hidden', data: { disable_with: _('Please wait...') } } %>
+      </div>
+      <hr class="col-9 mx-auto">
+      <p class="card-info">Last device updated 2 hours ago</p>
+    </div>
+  </div>
+</div>

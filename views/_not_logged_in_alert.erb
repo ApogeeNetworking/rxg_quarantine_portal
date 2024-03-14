@@ -1,0 +1,15 @@
+<div class="row h-100 align-items-center justify-content-center">
+  <div class="col-12 col-md-6 col-lg-4">
+    <%= card(class: [portal_card_classes, 'text-center', 'px-3 py-2']) do %>
+      <%= card_body do %>
+        <%= card_title do %>
+          <h2 class="text-warning fas fa-exclamation-triangle"></h2>
+        <% end # card_title %>
+        <%= card_text(class: 'h4') do %>
+          <%= _('You are not logged in.') %>
+        <% end # card_text %>
+        <%= card_link( _('purchase more usage'), {action: :usage_plan_list}, class: 'h4') %>
+      <% end # card_body %>
+    <% end # card %>
+  </div>
+</div>

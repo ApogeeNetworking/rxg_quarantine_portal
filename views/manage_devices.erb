@@ -1,0 +1,79 @@
+<%
+  can_add_devices = (@current_account_or_token.unlimited_devices? || @current_account_or_token.devices.portal_visible.count < @current_account_or_token.max_devices)
+  wlan = @current_account_or_token.policy.try(:wlan)
+  should_show_qr = wlan.try(:ssid).present? && can_add_devices
+  deviceless_sessions = @current_account_or_token.login_sessions.where('mac IS NULL OR mac NOT IN (?)', @current_account_or_token.devices.map(&:mac))
+  has_media_converters = @current_account_or_token.media_converters.portal_visible.exists?
+  ip_address_range = @current_account_or_token.ip_range
+%>
+
+<div class="row mb-3">
+  <div class="col-12">
+    <%= card(class: portal_card_classes) do %>
+      <%= card_body do %>
+        <%= react_component("DeviceManager", darkMode: @dark_mode) %>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<% if ip_address_range %>
+  <div class="row mb-3">
+    <div class="col-12">
+      <%= card(class: portal_card_classes) do %>
+        <%= card_body do %>
+          <%= render_portal_partial('ip_range_table', locals: {ip_address_range: ip_address_range}) %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<% if deviceless_sessions.any? %>
+  <div class="row mb-3">
+    <div class="col-12">
+      <%= card(class: portal_card_classes) do %>
+        <%= card_body do %>
+          <%= render_portal_partial('deviceless_sessions_table') %>
+        <% end # card_body %>
+      <% end # card %>
+    </div>
+  </div>
+<% end # if deviceless_sessions.any? %>
+
+<% if has_media_converters %>
+  <div class="row mb-3">
+    <div class="col-12">
+      <%= card(class: portal_card_classes) do %>
+        <%= card_body do %>
+          <%= render_portal_partial('media_converters_table') %>
+        <% end # card_body %>
+      <% end # card %>
+    </div>
+  </div>
+<% end # if has_media_converters %>
+
+<% if @current_account_or_token.supports_lan_parties? || @current_account_or_token.lan_parties.exists? %>
+  <div class="row mb-3">
+    <div class="col-12">
+      <%= card(class: portal_card_classes) do %>
+        <%= card_body do %>
+          <%= render_portal_partial 'lan_parties' %>
+        <% end # card_body %>
+      <% end # card %>
+    </div>
+  </div>
+<% end # @current_account_or_token.supports_lan_parties? || @current_account_or_token.lan_parties.exists? %>
+
+
+<% if @current_account_or_token.can_set_psk? %>
+  <div class="row mb-3">
+    <div class="col-12">
+      <%= card(class: portal_card_classes) do %>
+        <%= card_body do %>
+          <%= render_portal_partial 'wireless' %>
+        <% end # card_body %>
+      <% end # card %>
+    </div>
+  </div>
+<% end # if @current_account_or_token.can_set_psk? %>

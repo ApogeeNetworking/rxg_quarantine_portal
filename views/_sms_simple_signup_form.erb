@@ -1,0 +1,29 @@
+<%
+  title ||= _('SMS Signup')
+  hide_title ||= false
+%>
+<p class="col-12 text-center">
+  <%= _('Supply a valid mobile phone number below to receive your Internet access
+  token via SMS.') %>
+</p>
+<%= bootstrap_form_for @account, url: { action: :sms_account_create } do |f| %>
+  <fieldset>
+    <legend class="<%= 'visually-hidden' if hide_title %>"><%= title %></legend>
+    <!-- Uncomment and remove the form field below to obviate the need for the
+    end-user to supply a first name -->
+    <%# f.hidden_field :first_name, value: "SMS Auth" %>
+    <%= f.text_field(:first_name, {label: _('First Name'), label_as_placeholder: true, class: portal_form_input_classes, required: true}) %>
+    <!-- Uncomment and remove the form field below to obviate the need for the
+    end-user to supply a last name -->
+    <%# f.hidden_field :last_name, value: "SMS Auth" %>
+    <%= f.text_field(:last_name, {label: _('Last Name'), label_as_placeholder: true, class: portal_form_input_classes, required: true}) %>
+    <!-- Uncomment and remove the form field below to obviate the need for the
+    end-user to supply a last name -->
+    <%# f.hidden_field :email, value: "SMS Auth" %>
+    <%= f.text_field(:email, {label: _('Email'), label_as_placeholder: true, class: portal_form_input_classes, required: true}) %>
+    <%= f.text_field(:phone, {label: _('Phone'), label_as_placeholder: true, class: portal_form_input_classes, required: true}) %>
+    <%= f.select(:address2, options_for_select(@sms_email_suffix_by_carrier.to_a, disabled: [nil] ), { prompt: _( '-- Choose Mobile Carrier --'), label: _('Address 2'), skip_label: true  }, {class: portal_form_input_classes, required: true }) %>
+    <%= render_portal_partial('terms_checkbox', locals: { f: f }) %>
+    <%= f.submit(_('Continue'), class: portal_login_submit_classes, data: { disable_with: _('Please wait...') }) %>
+  </fieldset>
+<% end %> <!-- end form_for @account -->

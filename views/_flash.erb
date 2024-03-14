@@ -1,0 +1,188 @@
+<% notice_messages = {
+  invalid_credentials:               "W, #{_('Invalid credentials')}",
+  account_suspended:                 "W, #{_('Account suspended')}",
+  scg_cannot_login_yet:              "W, #{_('Intersession time not met')}",
+  scg_exceeded_max_sessions:         "E, #{_('Maximum sessions reached')}",
+  scg_not_yet_valid:                 "W, #{_('Shared code is not yet valid')}",
+  scg_no_longer_valid:               "W, #{_('Shared code has expired')}",
+  signed_up:                         "S, #{_('Thanks for signing up')}",
+  logged_in:                         "S, #{_('You are now logged in')}",
+  automatic_login:                   "S, #{_('You were automatically logged in')}",
+  authenticate_again:                "I, #{_('Please re-authenticate to confirm your identity')}",
+  logged_out:                        "I, #{_('You were logged out')}",
+  no_secret_question:                "W, #{_('No secret question for this account - cannot reset password')}",
+  password_mismatch:                 "W, #{_('New password did not match confirmation')}",
+  password_blank:                    "W, #{_('Cannot reset with a blank password')}",
+  password_reset_ok:                 "S, #{_('Password reset successfully')}",
+  password_reset_failed:             "W, #{_('Password reset failed - too short?')}",
+  password_reset_not_allowed:        "W, #{_('Password resets are not allowed from this network')}",
+  current_account_updated:           "S, #{_('Your account was updated successfully')}",
+  payment_method_updated:            "S, #{_('Your payment method was updated successfully')}",
+  payment_method_deleted:            "I, #{_('Your payment method was deleted')}",
+  invalid_coupon:                    "W, #{_('Invalid coupon code')}",
+  invalid_ticket:                    "E, #{_('The authentication assertion from the provider could not be validated')}",
+  redeem_coupon_ok:                  "S, #{_('Coupon redeemed successfully')}",
+  no_usage_plan_selected:            "W, #{_('Please select a plan')}",
+  no_method_selected:                "W, #{_('Please select a payment option')}",
+  no_direct_merchant_configured:     "E, #{_('Usage plan is not configured for a direct merchant')}",
+  no_offsite_merchant_configured:    "E, #{_('Usage plan is not configured for a offsite merchant')}",
+  no_pms_server_configured:          "E, #{_('Usage plan is not configured for a PMS server')}",
+  no_authorization_code:             "E, #{_('Please grant permissions when prompted')}",
+  no_omniauth_strategy:              "E, #{_('No login strategy found')}",
+  logout_failed:                     "E, #{_('You are still logged in')}",
+  already_logged_in:                 "E, #{_('You are already logged in')}",
+  not_logged_in:                     "E, #{_('You are not logged in')}",
+  no_current_account:                "E, #{_('You are not logged in with an account')}",
+  no_merchant:                       "E, #{_('No merchant or PMS server configured for the selected usage plan')}",
+  no_remote_response:                "E, #{_('No response received from the remote server')}",
+  no_matching_strategies:            "E, #{_('No matching login strategies for this portal')}",
+  invalid_radius_request:            "E, #{_('Invalid radius request')}",
+  invalid_ldap_request:              "E, #{_('Invalid ldap request')}",
+  improper_request:                  "E, #{_('Improper action request')}",
+  pending_transaction_canceled:      "I, #{_('Pending transaction canceled')}",
+  pms_guest_name_missing:            "W, #{_('You must specify a guest name to continue')}",
+  pms_room_number_missing:           "W, #{_('You must specify a room number to continue')}",
+  pms_guest_name_is_numeric:         "W, #{_('You have entered a room number into the guest name field')}",
+  pms_auth_failed:                   "E, #{_('Your reservation could not be found. Please double-check your credentials and try again.')}",
+  pms_room_not_found:                "E, #{_('The room you entered does not exist. Please double-check your credentials and try again.')}",
+  pms_connection_failed:             "E, #{_('The Property Management System did not respond. Please try again.')}",
+  pms_charge_failed:                 "E, #{_('The charge was not accepted. Please try again.')}",
+  pms_duplicate_charge:              "W, #{_('The charge was detected as a duplicate and was ignored')}",
+  pms_connection_error:              "E, #{_('There was an error communicating with the Property Management System. Please try again.')}",
+  pms_no_post:                       "E, #{_('Unable to post additional charges to your room. Please call the front desk.')}",
+  pms_invalid_arguments:             "E, #{_('The Property Management System interface is not configured correctly')}",
+  usage_plan_not_allowed:            "E, #{_('Usage plan not allowed')}",
+  vta_changed:                       "W, #{_('Please reset your Wi-Fi connection to communicate with your other devices')}",
+  device_updated:                    "S, #{_('The device was updated successfully')}",
+  device_not_updated:                "E, #{_('Device update failed')}",
+  device_deleted:                    "I, #{_('The device was deleted')}",
+  device_locked:                     "E, #{_('This device is locked to a different account')}",
+  account_deleted:                   "I, #{_('Your account was deleted')}",
+  error_updating_device:             "E, #{_('Failed to update your device')}",
+  invalid_mac_address:               "E, #{_('Invalid device MAC address')}",
+  confirm_upgrade:                   "I, #{_('Please confirm your upgrade plan selection')}",
+  merchant_no_response:              "E, #{_('No response received from the remote merchant')}",
+  psk_updated:                       "S, #{_('Wireless Pre-Shared Key has been updated')}",
+  account_already_activated:         "I, #{_('Account is already activated')}",
+  activate_account:                  "I, #{_('Please activate your account by entering your validation code')}",
+  account_activated:                 "S, #{_('Account activated successfully')}",
+  phone_number_missing:              "W, #{_('Phone number is missing.  Unable to send SMS validation code')}",
+  phone_validated:                   "I, #{_('Phone number validated successfully')}",
+  email_validated:                   "S, #{_('Email validated successfully')}",
+  validation_code_sent:              "I, #{_('Validation code sent')}",
+  sms_failure:                       "E, #{_('Unable to send SMS')}",
+  invalid_phone_number:              "E, #{_('Unable to validate phone number')}",
+  signature_validation_failed:       "E, #{_('Signature could not be validated. Contact an administrator')}",
+  unrecognized_identity:             "E, #{_('Unable to locate the identity provider')}",
+  lan_party_created:                 "S, #{_('LAN Party created')}",
+  lan_party_updated:                 "S, #{_('LAN Party updated')}",
+  lan_party_deleted:                 "I, #{_('LAN Party deleted')}",
+  lan_party_not_created:             "E, #{_('LAN Party not created')}",
+  lan_party_not_updated:             "E, #{_('LAN Party not updated')}",
+  device_removed_from_lan_party:     "I, #{_('Device removed from LAN Party')}",
+  lan_party_invitation_accepted:     "S, #{_('LAN Party invitation accepted')}",
+  lan_party_invitation_revoked:      "I, #{_('LAN Party invitation revoked')}",
+  lan_party_full:                    "E, #{_('The LAN Party cannot currently accept any more members')}",
+  lan_party_invitation_sent:         "S, #{_('The invitation has been sent')}",
+  lan_party_invitation_not_sent:     "E, #{_('The invitation could not be sent')}",
+  port_forward_added:                "S, #{_('Port Forward Added')}",
+  port_forward_deleted:              "I, #{_('Port Forward Deleted')}",
+  port_forward_updated:              "S, #{_('Port Forward Updated')}",
+  merchant_transaction_failed:       "E, #{_('Transaction failed, please check your payment method and try again')}",
+  usage_plan_changed:                "S, #{_('You have successfully changed your usage plan')}",
+  no_usage_plans_available:          "E, #{_('There are no usage plans available.')}",
+  invalid_usage_plan_access_code:    "W, #{_('Please enter a valid signup code.')}",
+  license_login_limit_exceeded:      "E, #{_('Maximum number of simultaneous logins exceeded.  Please try again later.')}",
+  license_account_limit_exceeded:    "E, #{_('Maximum number of created accounts exceeded.  Please try again later.')}",
+  license_vlan_limit_exceeded:       "E, #{_('Maximum number of created VLANs exceeded.  Please try again later.')}",
+  license_error:                     "E, #{_('There is an issue with the license on this server.  Please contact support.')}",
+  subaccount_cannot_create:          "E, #{_('Account does not have the ability to create Sub-Accounts.')}",
+  subaccount_max_limit_reached:      "E, #{_('Maximum sub-account limit reached. Unable to create a new sub-account.')}",
+  subaccount_error_creating:         "E, #{_('Error creating Sub-Account')}",
+  subaccount_error_updating:         "E, #{_('Error updating Sub-Account')}",
+  subaccount_not_exists:             "E, #{_('Unable to locate the specified Sub-Account')}",
+  subaccount_created:                "S, #{_('Sub-account was created successfully')}",
+  subaccount_updated:                "S, #{_('Sub-account was updated successfully')}",
+  subaccount_destroyed:              "S, #{_('Sub-account was deleted')}",
+  transaction_denied:                "E, #{_('The transaction attempt has been denied. Please try again.')}",
+} %>
+<% modal_messages = {
+  pms_guest_name_missing: _('<strong>You must specify a valid guest name to continue.</strong><br/><br/>Please review the pamphlet that the front desk gave you upon check-in. You must supply the name on your reservation. The name may be found on the pamphlet with your room number.
+  '),
+
+  pms_guest_name_is_numeric: _('<strong>You entered a number as your guest name.</strong><br/><br/>You may have accidentally entered the room number into the guest name field and vice versa. If this is the case, please enter your room number and guest name in the appropriate fields. <br/><br/> Please review the pamphlet that the front desk gave you upon check-in. You must supply the room number and guest name that you are checked into. The room number may be found on the pamphlet along with the name under which the reservation is checked in.
+  '),
+
+  pms_room_number_missing: _('<strong>You must specify a valid room number to continue.</strong><br/><br/>Please review the pamphlet that the front desk gave you upon check-in. You must supply the room number that you are checked into. The room number may be found on the pamphlet along with the name under which the reservation is checked in.
+  '),
+
+  pms_auth_failed: _('<strong>The credentials you supplied do not match any guests that we have on file.</strong><small><br /><br />Please review the following:<br /><br />#1) Check your room number. Look at the sign on your door. Look at the pamphlet in which the front desk supplied your key.<br /><br />#2) Make sure you entered the appropriate name. Usually this is the last name of the person under which the reservation was made.<br /><br />#3) If you have a name that may be easily misspelled, call the front desk and verify that your guest folio has your last name spelled correctly.<br /><br />#4) If your name has special characters (e.g., accents, umlauts, etc.), call the front desk and have the special characters removed.</small>
+  '),
+
+  pms_no_post: _('<strong>Your guest folio is set to no post.</strong><br /><br />The credentials that you supplied are correct, however, we are not allowed to post charges to your room.<br /><br />Call the front desk and provide them with a valid credit card to post incidental charges. Once the front desk has removed the no post flag on your folio, you will be able to access the Internet using the same credentials.
+  '),
+
+  pms_room_not_found: _('<strong>Invalid room number.</strong><br /><br />The room number that you specified does not exist. Check your room number. Look at the sign on your door. Look at the pamphlet in which the front desk supplied your key. Try again when you have found your room number.
+  ')
+
+} %>
+<%# flash[:exception]: a raw error string describing the cause of an exception %>
+<%# @exception:        a raw error string describing the cause of an exception %>
+<%# flash[:notice]:    either a symbol that maps to a string in the notice_messages hash defined above, or a raw string %>
+<%# @notice:           either a symbol that maps to a string in the notice_messages hash defined above, or a raw string %>
+<%# flash[:message]:   a raw string containing an informative message, usually in addition to a notice %>
+<%# @message:          a raw string containing an informative message, usually in addition to a notice %>
+<%# an action might populate more than one type of notice %>
+<% [ flash[:exception], @exception,
+    flash[:notice], @notice,
+     flash[:message], @message,
+     @current_account.nil? ? nil : @current_account.portal_message
+   ].flatten.compact.uniq.each do |notice| %>
+  <%
+  # Map flash message severity indicator to uikit alert level
+  severity_hash = {
+    'I' => :info,
+    'S' => :success,
+    'W' => :warning,
+    'E' => :danger,
+  }
+  severity = severity_hash['E']
+  message  = notice.to_s
+  if notice_messages[notice.to_sym]
+    notice_array = notice_messages[notice.to_sym].split(/,/)
+    message      = notice_array[1]
+    severity     = severity_hash[notice_array[0]]
+  end
+  %>
+  <%= alert(class: 'rounded-0 mb-0', context: severity, dismissible: true, fade: true, aria_label: _('Close')) do %>
+    <span class="text-center"><%= truncate(message.to_s, length: 100) %></span>
+  <% end %>
+  <% if modal_messages[notice.to_sym] %>
+    <%
+      modal_id = "modal-message-#{notice.to_s.dasherize}"
+      modal_title_id = "#{modal_id}-title"
+    %>
+    <%=
+      modal(id: modal_id, size: :xl, aria_labelled_by: modal_title_id, content: {class: ["#{'bg-dark' if @dark_mode}"]}) do
+    %>
+      <%= modal_header(close: 'light') do %>
+        <%= modal_title(id: modal_title_id) do %>
+          <%= _('Access Denied') %>
+        <% end # modal_title %>
+      <% end #modal_header %>
+      <%= modal_body do %>
+        <%= modal_messages[notice.to_sym].gsub(/\n/, '').html_safe %>
+      <% end # modal_body %>
+      <%= modal_footer do %>
+        <%= modal_footer_close_button(_('Cancel')) %>
+      <% end # modal_footer %>
+    <% end # modal %>
+    <script type="text/javascript">
+      $("#<%= modal_id %>").modal('show')
+    </script>
+  <% end %>
+<% end %>
+<%# Clear the message from the Account record, skipping validation and callbacks %>
+<% if @current_account %>
+  <% @current_account.update_column(:portal_message, nil) if @current_account.portal_message %>
+<% end %>

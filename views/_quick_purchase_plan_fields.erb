@@ -1,0 +1,34 @@
+<%
+  paid_plans ||= @paid_plans || []
+  show_coupon ||= @paid_plans.any? && Coupon.exists?
+%>
+<fieldset>
+  <legend><%= _('Plan Information') %></legend>
+    <%= f.form_group(class: 'row') do %>
+      <%
+        data = @usage_plans.collect { |usage_plan| {
+            'data-direct' => usage_plan.direct_merchant.present?,
+            'data-offsite' => usage_plan.offsite_merchant.present?,
+            'data-pms' => usage_plan.pms_server.present?,
+            'data-manual-ar' => usage_plan.manual_ar?,
+            'data-free' => usage_plan.price_free?,
+            'data-stripe_token' => usage_plan.is_stripe?,
+            'data-cybersource_token' => usage_plan.is_cybersource?,
+            'data-token' => usage_plan.is_stripe? || usage_plan.is_cybersource?,
+            'data-email_validation_supported' => usage_plan.requires_account_validation?(:email),
+            'data-phone_validation_supported' => usage_plan.requires_account_validation?(:sms),
+          }
+        }
+
+        plan_options = options_for_select(@usage_plans.enum_for(:each_with_index).collect { |up, index| [ "#{up.name} (#{up.price_display})", up.id, data[index] ] }, params.dig(:usage_plan, :id))
+      %>
+      <%= f.fields_for :usage_plan do |f| %>
+        <%= f.select(:id, plan_options, {prompt: _('- Select a Plan Type -'), label: _('Plan Type'), label_as_placeholder: true, required: true, wrapper: {class: "col-12 #{'col-lg-6' if show_coupon}"}, }, {class: portal_form_select_classes}) %>
+      <% end # f.fields_for :usage_plan %>
+      <%= f.text_field('coupon_code', {value: params[:coupon_code], label: _('Do you have a coupon?'), label_as_placeholder: true, class: portal_form_input_classes, wrapper: {class: "col-12 col-lg-6"}, autocomplete: 'off', autocorrect: :off}) if show_coupon %>
+    <% end # f.form_group %>
+  </fieldset>
+
+  <% @usage_plans.each do |usage_plan| %>
+    <%= render_portal_partial 'quick_purchase_usage_plan', locals: {f: f, usage_plan: usage_plan} %>
+  <% end %>

@@ -1,0 +1,172 @@
+<% if @current_account && transaction = @current_account.merchant_transactions.find_by_id(params[:id].to_i) %>
+
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <style>
+      .invoice-box {
+        max-width: 800px;
+        margin: auto;
+        padding: 30px;
+        font-size: 16px;
+        line-height: 24px;
+        font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+        color: #555;
+      }
+
+      .invoice-box table {
+        width: 100%;
+        line-height: inherit;
+        text-align: left;
+        padding-bottom: 30px;
+      }
+
+      .invoice-box table td {
+        padding: 5px;
+        vertical-align: top;
+      }
+
+      .invoice-box table tr td:nth-child(2) {
+        text-align: right;
+      }
+
+      .invoice-box table tr.top table td {
+        padding-bottom: 20px;
+      }
+
+      .invoice-box table tr.top table td.title {
+        font-size: 45px;
+        line-height: 45px;
+        color: #333;
+      }
+
+      .invoice-box table tr.information table td {
+        padding-bottom: 40px;
+      }
+
+      .invoice-box table tr.heading td {
+        background: #eee;
+        border-bottom: 1px solid #ddd;
+        font-weight: bold;
+      }
+
+      div.title {
+        font-weight: bold;
+        padding-bottom: 30px;
+      }
+
+      div.account {
+        padding-bottom: 20px;
+      }
+
+      div.heading {
+        background: #eee;
+        border-bottom: 1px solid #ddd;
+        font-weight: bold;
+      }
+
+      div.payment {
+        padding-top: 20px;
+        padding-bottom: 20px;
+      }
+
+      div.payment div {
+        padding-bottom: 10px;
+      }
+
+      .invoice-box table tr.details td {
+        padding-bottom: 30px;
+      }
+
+      .invoice-box table tr.item td {
+        border-bottom: 1px solid #eee;
+      }
+
+      .invoice-box table tr.item.last td {
+        border-bottom: none;
+      }
+
+      .invoice-box table tr.total {
+        border-top: 2px solid #eee;
+        font-weight: bold;
+      }
+
+      @media only screen and (max-width: 600px) {
+        .invoice-box table tr.top table td {
+          width: 100%;
+          display: block;
+          text-align: center;
+        }
+
+        .invoice-box table tr.information table td {
+          width: 100%;
+          display: block;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="invoice-box">
+      <div class="title"><%= _('INVOICE') %></div>
+      <div class="heading"><%= _('Your Account') %></div>
+      <div class="account">
+        <div><%= @current_account.full_name %></div>
+          <% if @current_account.address1 %>
+            <div><%= @current_account.address1 %></div>
+            <% if @current_account.address2 %>
+              <div><%= @current_account.address2 %></div>
+            <% end %>
+              <div><%= @current_account.city %>, <%= @current_account.region %> <%= @current_account.zip %></div>
+              <div><%= @current_account.phone %></div>
+          <% end %>
+          <div><%= @current_account.email %></div>
+      </div>
+
+      <% if usage_plan = transaction.usage_plan %>
+        <%= table(cellpadding: 0, cellspacing: 0) do %>
+          <tr class="top">
+            <tr class="heading">
+              <td><%= _('Desicription') %></td>
+              <td><%= _('Price') %></td>
+            </tr>
+            <tr class="item">
+              <td><%= usage_plan.time_plan.name %></td>
+              <td><%= usage_plan.time_plan.price_display %></td>
+            </tr>
+            <tr class="item">
+              <td><%= usage_plan.quota_plan.name %></td>
+              <td><%= usage_plan.quota_plan.price_display %></td>
+            </tr>
+            <% usage_plan.plan_addons.of_component_type(:misc).each do |plan_addon| %>
+              <tr class="item">
+                <td><%= plan_addon.name %></td>
+                <td><%= plan_addon.price_display %></td>
+              </tr>
+            <% end %>
+            <tr class="total">
+              <td><%_('Total:') %></td>
+              <td><%= usage_plan.price_display %></td>
+            </tr>
+          </tr>
+        <% end # table %>
+      <% end # if usage_plan = transaction.usage_plan %>
+
+      <div class="heading"><%= _('Payment') %></div>
+        <div class="payment">
+          <div><%= _('Paid %{price} on %{date}') % { price: transaction.price_display, date: transaction.created_at } %></div>
+          <div><%= _('Payment submitted via client on IP %{ip} with MAC %{mac}') % { ip: transaction.ip, mac: transaction.mac } %></div>
+          <% if transaction.ar_transaction&.wispr_data && transaction.ar_transaction.wispr_data["mac"] %>
+            <div><%= _('Client\'s connected AP indicated to be: %{mac} ') % {mac: transaction.ar_transaction.wispr_data["mac"]} %></div>
+          <% end %>
+        </div>
+    </div>
+
+    <% else %>
+      <strong> <%= _('Transaction not found') %> </strong>
+    <% end %>
+  </body>
+
+</html>
