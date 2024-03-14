@@ -1,0 +1,90 @@
+<%= card(class: "#{portal_card_classes} mb-3") do %>
+  <%= card_body do %>
+    <%= card_title(class: 'text-center') do %>
+      <%= _('Usage Plan Charge') %>
+    <% end # card_title %>
+    <% if @current_account.portal_message.to_s.to_sym == :vta_changed %>
+      <%= card_text(class: 'text-center fw-bolder') do %>
+        <%= _('You must reset your Wi-Fi connection now.') %>
+      <% end # card_text %>
+      <%= card_text do %>
+        <%= _('You will not be able to access the Internet until you reset your Wi-Fi connection.') %>
+     <% end # card_text %>
+      <%= card_text do %>
+        <%= _('If your device has a button or switch that enables Wi-Fi, toggle it, wait a few seconds, then toggle it again.') %>
+     <% end # card_text %>
+      <%= card_text do %>
+        <%= _('Reboot your device if you are unsure how to reset the Wi-Fi connection.') %>
+     <% end # card_text %>
+    <% end # if @current_account.portal_message.to_s.to_sym == :vta_changed %>
+    <% if @redeemed_coupon || @usage_plan.price_free? %>
+      <%= card_text(class: 'text-center') do %>
+        <%= _('You may now access the Internet using the new usage plan.') %>
+      <% end # card_text %>
+    <% elsif @pms_response %>
+      <%= card_text(class: 'text-center') do %>
+        <% if @pms_response.success? %>
+          <%= _('The charge was successfully posted to your room and you may now use the Internet.') %>
+        <% elsif @pms_response.room_not_found? %>
+          <%= (_('The room you entered does not exist. Please double-check your credentials and %{link}.') % { link: link_to(_('try again'), action: :usage_plan_list) }).html_safe %>
+        <% elsif @pms_response.auth_failed? %>
+          <%= (_('Your reservation could not be found. Please double-check your credentials and %{link}.') % { link: link_to(_('try again'), action: :usage_plan_list) }).html_safe %>
+        <% elsif @pms_response.connection_failed? %>
+          <%= (_('The Property Management System did not respond. Please %{link}.') % { link: link_to(_('try again'), action: :usage_plan_list) }).html_safe %>
+        <% elsif @pms_response.charge_failed? %>
+          <%= (_('The charge did not complete. Please %{link}.') % { link: link_to(_('try again' ), action: :usage_plan_list) }).html_safe %>
+        <% elsif @pms_response.duplicate_charge? %>
+          <%= _('The charge was detected as a duplicate and was not posted to your room. You may now use the Internet.') %>
+        <% elsif @pms_response.connection_error? %>
+          <%= (_('There was an error when communicating with the Property Management System. Please %{link}.') % { link: link_to(_('try again'), action: :usage_plan_list) }).html_safe %>
+        <% elsif @pms_response.no_post? %>
+          <%= (_('Unable to post additional charges to your room. Please contact the front desk and then %{link}.') % { link: link_to(_('try again'), action: :usage_plan_list) }).html_safe %>
+        <% elsif @pms_response.invalid_arguments? %>
+          <%= _('The Property Management System client is not configured correctly.') %>
+        <% end %>
+     <% end # card_text %>
+    <% elsif @merchant_response && !@usage_plan.manual_ar? %>
+      <% if @merchant_response.success? %>
+        <%= card_text(class: 'text-center fw-bolder') do %>
+          <%= _('Usage plan charge was a success.') %>
+        <% end # card_text %>
+        <%= card_text(class: 'text-center') do %>
+          <%= @merchant_response.message %>.
+        <% end # card_text %>
+        <%= card_text(class: 'text-center fw-bolder') do %>
+          <%= _('Thank you for your payment.') %>
+        <% end # card_text %>
+        <%= card_text(class: 'text-center') do %>
+          <%= _('You may now access the Internet using the new usage plan.') %>
+        <% end # card_text %>
+      <% else %>
+        <%= card_text(class: 'text-center') do %>
+          <%= @merchant_response.message %>.
+        <% end # card_text %>
+        <%= card_text(class: 'text-center') do %>
+          <%= _('Usage plan charge failed. You will not be able to access the Internet.') %>
+       <% end # card_text %>
+        <%= card_text(class: 'text-center') do %>
+          <%= (_('You may %{link}.') % { link: link_to(_('try again'), action: :usage_plan_list) }).html_safe %>
+        <% end # card_text %>
+      <% end %>
+    <% elsif @usage_plan.manual_ar? %>
+      <%# I don't think we really need to do anything here right now %>
+    <% else %>
+      <%= card_text(class: 'text-center') do %>
+        <%= _('Fatal Error. No response was received from the remote merchant. Please contact technical support. You will not be able to access the Internet.') %>
+     <% end # card_text %>
+    <% end # if @redeemed_coupon || @usage_plan.price_free? %>
+    <%= render_portal_partial 'login_success' %>
+    <%
+      can_add_devices = (@current_account_or_token.unlimited_devices? || @current_account_or_token.devices.portal_visible.count < @current_account_or_token.max_devices)
+      wlan = @current_account_or_token.policy.try(:wlan)
+      should_show_qr = wlan.try(:ssid).present? && can_add_devices && !@current_account_or_token.validation_pending?
+    %>
+    <% if should_show_qr %>
+      <div class="my-3 d-flex justify-content-center align-items-center">
+        <%= render_portal_partial 'qr_code_login', locals: { wlan: wlan } %>
+      </div>
+    <% end # should_show_qr %>
+  <% end # card_body %>
+<% end # card %>

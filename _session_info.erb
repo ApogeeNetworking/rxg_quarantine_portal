@@ -1,0 +1,13 @@
+<script type="text/javascript">
+  please_wait_complete = true // Stop refreshing login_session_status action
+</script>
+<% if action_name == 'login_session_status' %>
+  <%# if we are rendering in response to login_session_status check, we want to render
+      the please_wait partial one more time while we redirect to login_success %>
+  <%= render_portal_partial 'please_wait' %>
+  <%# perform a redirect to login success, this time with no_please_wait, so we can
+      reload the full page including the side menu %>
+  <script>window.location = "login_success?no_please_wait=true"</script>
+<% else %>
+  <%= render_portal_partial 'session_info_complete' %>
+<% end %>

@@ -1,0 +1,377 @@
+<%
+  button ||= nil
+  f ||= nil
+  css_class ||= nil
+%>
+<% subscription = begin
+  # use the @subscription instance if it pertains to this usage plan.  don't
+  # assume the same addons will exist for other plans, so use a new Subscription
+  # in that case
+  if @subscription.usage_plan_id == usage_plan.id
+    @subscription
+  else
+    Subscription.assemble(usage_plan)
+  end
+end
+if @current_account_or_token
+  if subscription.usage_plan.manual_ar?
+    subscription.reset_price_for_credit!(@current_account_or_token.credit)
+  else
+    subscription.reset_price_for_credit!(@current_account_or_token.prorated_credit)
+  end
+end
+%>
+
+<%= card(class: "#{portal_card_classes} #{css_class}") do %>
+  <%= card_body do %>
+    <hgroup class="mb-4">
+      <%= card_title(class: 'h2 text-primary text-center') do %>
+        <%= usage_plan.name %>
+      <% end # card_title %>
+      <%#= card_subtitle(class: 'text-center') do %>
+        <!--<span class="h1"><%#= usage_plan.price_display %></span> <%#= "<small>/ #{usage_plan.recurring_method}</small>".html_safe unless (usage_plan.recurring_method == 'none' || usage_plan.price_display == 'free') %>-->
+      <%# end # card_subtitle %>
+    </hgroup>
+    <hr class="mx-5 mb-3">
+    <div id="<%= usage_plan.name.parameterize %>" class="row mb-3 usage-plan-content" data-currency="<%= usage_plan.currency %>">
+      <%= table(dark: @dark_mode) do %>
+        <% unless usage_plan.description.blank? %>
+          <%= table_row do %>
+            <%= table_heading do %>
+              <%= _('Description') %>
+            <% end # table_heading %>
+            <%= table_data do %>
+              <div class="right-align">
+                <%= usage_plan.description.html_safe %>
+                <% if usage_plan.time_plan && !usage_plan.time_plan.description.blank? %>
+                  <%= usage_plan.time_plan.description.html_safe %>
+                <% end # usage_plan.time_plan && !usage_plan.time_plan.description.blank? %>
+                <% if usage_plan.quota_plan && !usage_plan.quota_plan.description.blank? %>
+                    <br />
+                  <%= usage_plan.quota_plan.description.html_safe %>
+                <% end # usage_plan.quota_plan && !usage_plan.quota_plan.description.blank? %>
+                <% usage_plan.plan_addons.of_component_type(:misc).each do |plan_addon| %>
+                  <% unless plan_addon.description.blank? %>
+                    <br />
+                    <%= plan_addon.description.html_safe %>
+                  <% end # unless plan_addon.description.blank? %>
+                <% end # usage_plan.plan_addons.of_component_type(:misc).each %>
+              </div>
+            <% end # table_data %>
+          <% end # table_row %>
+        <% end # unless usage_plan.description.blank? %>
+
+        <% if usage_plan.base_price.to_f > 0.0 %>
+          <%= table_row do %>
+            <%= table_heading do %>
+              <%= _('Base Price') %>
+            <% end # table_heading %>
+            <%= table_data(class: "right-align") do %>
+              <span class="price_display" data-price="<%= usage_plan.base_price %>"><%= number_to_currency(usage_plan.base_price, unit: usage_plan.currency_unit) %></span>
+            <% end # table_data %>
+          <% end # table_row %>
+        <% end # usage_plan.base_price.to_f > 0.0 %>
+
+        <% if usage_plan.included_max_devices.to_i > 0 %>
+          <%= table_row do %>
+            <%= table_heading do %>
+              <%= _('Devices') %>
+            <% end # table_heading %>
+            <%= table_data(class: "right-align") do %>
+              <% max = usage_plan.included_max_devices %>
+              <%= (n_('Plan includes support for up to <b>1</b> device.', 'Plan includes support for up to <b>%{max}</b> devices.', max) % { max: max }).html_safe %>
+              <% if usage_plan.plan_addons.optional.of_component_type(:max_devices).exists? %>
+                <% raise %>
+                <%= _('Support for more devices may be selected from the Optional Addons section below.') %>
+              <% end # usage_plan.plan_addons.optional.of_component_type(:max_devices) %>
+            <% end # table_data %>
+          <% end # table_row %>
+        <% end # usage_plan.included_max_devices.to_i > 0 %>
+
+        <% if usage_plan.account_group && usage_plan.account_group.policy %>
+          <% usage_plan.account_group.policy.bandwidth_queues.each do |queue| -%>
+            <% if queue.net_apps.empty? && queue.wan_targets.empty? %>
+              <%= table_row do %>
+                <%= table_heading do %>
+                  <%= _('Speed') %>
+                <% end # table_heading %>
+                <%= table_data do %>
+                  <%= queue.bandwidth %>
+                <% end # table_data %>
+              <% end # table_row %>
+              <% break %>
+            <% end # queue.net_apps.empty? && queue.wan_targets.empty? %>
+          <% end # usage_plan.account_group.policy.bandwidth_queues.each %>
+        <% end # usage_plan.account_group && usage_plan.account_group.policy %>
+
+        <%
+        expiration_text = ''
+        if usage_plan.unlimited_usage_lifetime?
+          expiration_text = _('usage never expires')
+        elsif usage_plan.no_usage_lifetime?
+          unless usage_plan.plan_addons.of_component_type('lifetime').exists?
+            expiration_text = _('determined by selected Plan Addons')
+          end
+        elsif usage_plan.absolute_usage_lifetime
+          expiration_text = l(usage_plan.absolute_usage_lifetime)
+        elsif usage_plan.usage_lifetime_time
+          expiration_text = _('%{time} after payment' % {
+            time: pluralize(usage_plan.usage_lifetime_time, usage_plan.usage_lifetime_time_unit.singularize)
+          })
+        end %>
+        <% unless expiration_text.blank? %>
+          <%= table_row do %>
+            <%= table_heading do %>
+              <%= _('Expires') %>
+            <% end # table_heading %>
+            <%= table_data do %>
+              <div class="right-align">
+                <%= expiration_text %>
+              </div>
+            <% end # table_data %>
+          <% end # table_row %>
+        <% end %>
+
+        <% if (!usage_plan.time_plan.try(:unlimited_usage_minutes?) && (usage_plan.time_plan || usage_plan.optional_time_plans.exists?)) %>
+          <%= table_row do %>
+            <%= table_heading do %>
+              Time
+            <% end # table_heading %>
+            <%= table_data do %>
+              <%# TODO: write a better description of what "Time" is, and how it differs from
+                  expiration %>
+              <p>
+                <% if subscription.max_devices.to_i > 1 || usage_plan.plan_addons.of_component_type(:max_devices).exists? %>
+                  <%= _('Usage Time is an allotment of Internet access time which may be shared among your devices. Additional simultaneous login sessions results in faster depletion of your usage time').html_safe %>
+                <% else %>
+                  <%= _('Usage Time is an allotment of Internet access time.') %>
+                <% end # subscription.max_devices.to_i > 1 || usage_plan.plan_addons.of_component_type(:max_devices).exists? %>
+              </p>
+
+              <% if (usage_plan.time_plan && !usage_plan.time_plan.unlimited_usage_minutes?) %>
+                <b><%= _('Included with Plan:') %></b>
+                <%= usage_plan.time_plan.usage_display %>
+                <% if usage_plan.time_plan.rollover_usage_minutes %>
+                  : <%= _('existing time is rolled-over.') %>
+                <% end # if usage_plan.time_plan.rollover_usage_minutes %>
+                <%= render_portal_partial 'time_plan', object: usage_plan.time_plan, locals: {usage_plan: usage_plan, subscription: subscription} %>
+              <% elsif usage_plan.time_plan && !usage_plan.time_plan.price_free? %>
+                <span class="included_price_element d-none" data-price="<%= usage_plan.time_plan.price %>"></span>
+              <% end # if (usage_plan.time_plan && !usage_plan.time_plan.unlimited_usage_minutes?) %>
+
+              <% if usage_plan.optional_time_plans.exists? && f %>
+                <h6><%= _('Optional Time configurations:') %></h6>
+                <%= select_tag(
+                      "usage_plan[#{usage_plan.id}][time_plan_id]",
+                      options_for_select(
+                        [
+                          usage_plan.time_plan ?
+                            [
+                              "#{usage_plan.time_plan.name} (#{usage_plan.time_plan.price_display(currency_unit: usage_plan.currency_unit)}) -- #{_('included with plan')}",
+                              usage_plan.time_plan.id,
+                              { 'data-toggle' => "collapse", 'data-target' => "\#time_plan_#{usage_plan.id}_#{usage_plan.time_plan_id}" }
+                            ] : nil
+                        ].compact +
+                        usage_plan.optional_time_plans.map { |time_plan|
+                          [
+                            "#{time_plan.name} (#{time_plan.price_display(currency_unit: usage_plan.currency_unit)})",
+                            time_plan.id,
+                            { 'data-toggle' => "collapse", 'data-target' => "\#time_plan_#{usage_plan.id}_#{time_plan.id}" }
+                          ]
+                        },
+                        @subscription.time_plan_id
+                      ),
+
+                      { include_blank: usage_plan.time_plan ? false : _('- No addon selected -'),
+                        id: nil,
+                        class: "#{portal_form_select_classes} plan_addon_toggle"
+                      } ) %>
+                <% usage_plan.optional_time_plans.each do |time_plan| %>
+                  <%= render_portal_partial 'time_plan', object: time_plan, locals: {usage_plan: usage_plan, subscription: subscription} %>
+                <% end # usage_plan.optional_time_plans.each %>
+              <% end # usage_plan.optional_time_plans.exists? && f %>
+            <% end # table_data %>
+          <% end # table_row %>
+        <% elsif usage_plan.time_plan && !usage_plan.time_plan.price_free? %>
+          <span class="included_price_element d-none" data-price="<%= usage_plan.time_plan.price %>"></span>
+        <% end # (!usage_plan.time_plan.try(:unlimited_usage_minutes?) && (usage_plan.time_plan || usage_plan.optional_time_plans.exists?)) %>
+
+        <% if usage_plan.optional_quota_plans.exists? || (usage_plan.quota_plan && !usage_plan.quota_plan.unlimited_usage_mb_up? && !usage_plan.quota_plan.unlimited_usage_mb_down?) %>
+          <%= table_row do %>
+            <%= table_heading do %>
+              <%= _('Quota') %>
+            <% end # table_heading %>
+            <%= table_data do %>
+              <% if (usage_plan.quota_plan && !usage_plan.quota_plan.unlimited_usage_mb_up? && !usage_plan.quota_plan.unlimited_usage_mb_down?) %>
+                <b><%= _('Included with Plan:') %></b>
+                <%= number_to_human_size(usage_plan.quota_plan.usage_bytes_down.to_i) %>
+                <%= _('download') %>,
+                <%= number_to_human_size(usage_plan.quota_plan.usage_bytes_up.to_i) %>
+                <%= _('upload') %>
+                <% if usage_plan.quota_plan.rollover_usage_mb %>
+                  : <%= _('existing quota is rolled-over.') %>
+                <% end # if usage_plan.quota_plan.rollover_usage_mb %>
+                <%= render_portal_partial 'quota_plan', object: usage_plan.quota_plan, locals: {usage_plan: usage_plan, subscription: subscription} %>
+              <% elsif usage_plan.quota_plan && !usage_plan.quota_plan.price_free? %>
+                <span class="included_price_element d-none" data-price="<%= usage_plan.quota_plan.price %>"></span>
+              <% end # if (usage_plan.quota_plan && !usage_plan.quota_plan.unlimited_usage_mb_up? && !usage_plan.quota_plan.unlimited_usage_mb_down?) %>
+
+              <% if usage_plan.optional_quota_plans.exists? && f %>
+                <h6><%= _('Optional Quota configurations:') %></h6>
+                <%= select_tag(
+                      "usage_plan[#{usage_plan.id}][quota_plan_id]",
+                      options_for_select(
+                        [
+                          usage_plan.quota_plan ?
+                            [
+                              "#{usage_plan.quota_plan.name} (#{usage_plan.quota_plan.price_display(currency_unit: usage_plan.currency_unit)}) -- #{_('included with plan')}",
+                              usage_plan.quota_plan.id,
+                              { 'data-toggle' => "collapse", 'data-target' => "\#quota_plan_#{usage_plan.id}_#{usage_plan.quota_plan_id}" }
+                            ] : nil
+                        ].compact +
+                        usage_plan.optional_quota_plans.map { |quota_plan|
+                          [
+                            "#{quota_plan.name} (#{quota_plan.price_display(currency_unit: usage_plan.currency_unit)})",
+                            quota_plan.id,
+                            { 'data-toggle' => "collapse", 'data-target' => "\#quota_plan_#{usage_plan.id}_#{quota_plan.id}" }
+                          ]
+                        },
+                        @subscription.quota_plan_id
+                      ),
+
+                      { include_blank: usage_plan.quota_plan ? false : _('- No addon selected -'),
+                        id: nil,
+                        class: "#{portal_form_select_classes} plan_addon_toggle"
+                      } ) %>
+                <% usage_plan.optional_quota_plans.each do |quota_plan| %>
+                  <%= render_portal_partial 'quota_plan', object: quota_plan, locals: {usage_plan: usage_plan, subscription: subscription} %>
+                <% end # usage_plan.optional_quota_plans.each %>
+              <% end # if usage_plan.optional_quota_plans.exists? && f %>
+            <% end # table_data %>
+          <% end # table_row %>
+        <% elsif usage_plan.quota_plan && !usage_plan.quota_plan.price_free? %>
+          <span class="included_price_element d-none" data-price="<%= usage_plan.quota_plan.price %>"></span>
+        <% end # if usage_plan.optional_quota_plans.exists? || (usage_plan.quota_plan && !usage_plan.quota_plan.unlimited_usage_mb_up? && !usage_plan.quota_plan.unlimited_usage_mb_down?) %>
+
+        <%# always display all of the plan's addon options, not just the subcription addons %>
+        <% addons = usage_plan.plan_addons.where(included_with_plan: false).order(:component) %>
+        <% usage_plan.plan_addons.where(included_with_plan: true).each do |addon| %>
+          <span class="included_price_element d-none" data-price="<%= addon.fixed_price %>"></span>
+        <% end # usage_plan.plan_addons.where(included_with_plan: true).each %>
+        <% if addons.exists? && f %>
+          <%= table_row do %>
+            <%= table_heading do %>
+              <%= _('Optional Addons') %>
+            <% end # table_heading %>
+            <%= table_data do %>
+
+              <% addons.group_by(&:component).each do |component, addons| %>
+                <div class="addon_type price-group center-align">
+                  <h4><%= addons.first.component_display %></h4>
+
+                  <%= f.fields_for("usage_plan[#{usage_plan.id}]", subscription.usage_plan) do |upf| %>
+                    <%= upf.select(:plan_addons,
+                      options_for_select(
+                        addons.map { |addon|
+                          [
+                            "#{addon.name} (#{addon.price_display})",
+                            addon.id,
+                            { 'data-toggle' => "collapse", 'data-target' => "\#plan_addon_options_#{usage_plan.id}_#{addon.id}" }
+                          ]
+                        },
+                        # the "selected" option:
+                        subscription.subscription_addons.find { |sa| sa.plan_addon_id.in?( addons.collect(&:id) ) }.try(:plan_addon_id)
+                      ),
+                          { include_blank: _('- No addon selected -') },
+                          { id: nil,
+                            class: "#{portal_form_select_classes} plan_addon_toggle text-center",
+                            name: "usage_plan[#{usage_plan.id}][plan_addon_ids][]" } ) %>
+                    <% addons.each do |addon| %>
+                      <%= render_portal_partial 'plan_addon', object: addon, locals: {
+                        subscription: subscription,
+                        usage_plan: usage_plan
+                      } %>
+                    <% end # addons.each %>
+                    <% upf.fields_for :plan_addons do |paf| %>
+                      <% plan_addon = paf.object %>
+                      <%= paf.text_field :selected_quantity %>
+
+                    <% end # upf.fields_for :plan_addons %>
+                  <% end # fields_for("usage_plan[#{usage_plan.id}]", subscription.usage_plan) %>
+                </div>
+              <% end # addons.group_by(&:component).each %>
+            <% end # table_data %>
+          <% end # table_row %>
+        <% end # addons.exists? && f %>
+
+        <% if usage_plan.is_recurring? && !usage_plan.price_free? %>
+          <%= table_row do %>
+            <%= table_heading do %>
+              <%= _('Payment') %>
+            <% end # table_heading %>
+            <%= table_data do %>
+              <%= _('Charged once immediately and billed %{method} to selected method of payment.') % { method: usage_plan.recurring_method } %>
+            <% end # table_data %>
+          <% end # table_row %>
+        <% end #  if usage_plan.is_recurring? && !usage_plan.price_free? %>
+        <% if usage_plan.requires_account_validation? %>
+          <%= table_row do %>
+            <%= table_heading do %>
+              <%= _('Valdation') %>
+            <% end # table_heading %>
+            <%= table_data do %>
+              <%= _('Requires account validation by %{method}.') % { method: UsagePlan::VALIDATION_METHODS.inverse[usage_plan.validation_method] } %>
+            <% end # table_data %>
+          <% end # table_row %>
+        <% end # usage_plan.requires_account_validation? %>
+
+        <% if local_variables.include?(:view_context) && view_context  == :show && usage_plan.prorate_credit %>
+          <%= table_row do %>
+            <%= table_heading do %>
+              <%= _('Subtotal') %>
+            <% end %>
+            <%= table_data do %>
+              <div class="right-align"><span class="subtotal-price-element price_display sub_total_price"><%= subscription.price_display %></span></div>
+            <% end %>
+          <% end %>
+        <% end %>
+
+
+        <% if subscription.price_was_adjusted_for_credit? && f %>
+          <%= table_row do %>
+            <%= table_heading do %>
+              <%= _('Existing Credit') %>
+            <% end # table_heading %>
+            <%= table_data do %>
+              <div class="right-align"><span class="credit-price-element price_display" data-credit="<%= subscription.credit %>">- <%= subscription.currency_unit %><%= subscription.credit %></span></div>
+            <% end # table_data %>
+          <% end # table_row %>
+        <% end # subscription.price_was_adjusted_for_credit? && f %>
+
+        <% if f %>
+          <%= table_row do %>
+            <%= table_heading do %>
+              <%= _('Total Price') %>
+            <% end # table_heading %>
+            <%= table_data do %>
+              <div class="right-align">
+                <span class="price_display"><%#= usage_plan.currency_unit unless usage_plan.price_free? %></span><span class="price_display total_price"><%= subscription.price_display(currency_unit: '') %></span>
+              </div>
+            <% end # table_data %>
+          <% end # table_row %>
+        <% end # if f %>
+        <!--
+          <%= table_row do %>
+            <%= table_heading do %>
+              Recurring
+            <% end # table_heading %>
+            <%= table_data do %>
+              <%= usage_plan.recurring_method %>
+            <% end # table_data %>
+          <% end # table_row %>
+        -->
+      <% end # table %>
+    </div>
+    <%= button if button %>
+  <% end # card_body %>
+<% end # card %>

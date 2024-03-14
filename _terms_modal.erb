@@ -1,0 +1,11 @@
+<%= modal(id: 'terms-modal', scrollable: true, size: :lg, aria_labelled_by: 'terms-title', content: { class: ["#{'bg-dark' if @dark_mode}"] }) do %>
+  <%= modal_header(close: @dark_mode ? 'light' : true) do %>
+    <%= modal_title(id: 'terms-title') do %>
+      <%= _('Terms of Service') %>
+    <% end # modal_title %>
+  <% end #modal_header %>
+  <%= modal_body do %>
+    <%= render_portal_partial('tos') %>
+  <% end #modal_body %>
+  <%= modal_footer %>
+<% end # modal %>

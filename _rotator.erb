@@ -1,0 +1,42 @@
+<%
+  # Select random rotatee(s) for the given URN
+  if urn.is_a?(Array)
+    rotator_logs = pick_rotatees(urn: urn.sample.to_s, count: count ||= 1)
+  else
+   rotator_logs = pick_rotatees(urn: urn.to_s, count: count ||= 1)
+  end
+%>
+<% if rotator_logs.any? %>
+  <% rotator_logs.in_groups_of(3, false) do |group| %>
+    <% group.each do |rotator_log| %>
+      <%
+        rotatee = rotator_log.rotatee
+        content = rotatee.content if rotatee.content.present?
+        content ||= nil
+        payload = ERB.new(rotatee.payload).result(binding).html_safe if rotatee.payload.present?
+        payload ||= nil
+        clickable = !rotatee.url.blank?
+        image ||= nil
+      %>
+      <div class="text-center">
+        <% unless rotatee.payload =~ /rotatee.image/ %>
+          <% if rotatee.image.attached? %>
+            <%= image_tag url_for(rotatee.image), id: 'rotatee_current_image', style: 'max-width: 50vw; margin: auto;' %>
+          <% end %>
+        <% end %>
+        <%
+          # Payload has precedence over content
+          if payload.present?
+        %>
+          <%=
+            # if it's a clickable link, render it inside a link, else just render it
+            link_to(payload, { controller: 'portal/default', action: 'convert_impression', impression: rotator_log.id}, class: 'hero-ad-link' ) if clickable
+          %>
+          <%= payload unless clickable %>
+        <% elsif content.present? %>
+          <%= content %>
+        <% end # if payload.present? %>
+      </div>
+    <% end # group.each %>
+  <% end # rotator_logs.in_groups_of(3, false) %>
+<% end # if rotator_logs.any? %>

@@ -1,0 +1,21 @@
+<div class="row">
+  <div class="col-12">
+    <h2 class='text-center'><%= _('Offsite Return') %></h2>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <!-- payment_status parameter is inserted by Paypal in the return and may
+         differ with other offsite payment gateways -->
+    <% if params[:payment_status] %>
+      <p> <%= _('Payment status:') %> <%= params[:payment_status] %> </p>
+    <% end %>
+
+    <p> <%= _('Thank you for your payment.') %> </p>
+
+    <p> <%= _('You may now access the Internet using the new usage plan.') %> </p>
+
+  </div>
+</div>
+<%= render_portal_partial 'login_success' %>

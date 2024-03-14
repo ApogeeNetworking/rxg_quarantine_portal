@@ -1,0 +1,42 @@
+<%= card_body do %>
+  <%= card_title do %>
+    <%= _('SMS Login') %>
+  <% end # card_title %>
+  <% unless @sms_account_group && @sms_custom_email %>
+    <%= card_text do %>
+      <%= _('Login via SMS has not been configured by the operator of this network.') %>
+    <% end # card_text %>
+  <% else %>
+    <% unless @account && @account.valid? %>
+      <%= render_portal_partial('sms_simple_signup_form', locals: { hide_title: true }) %>
+    <% else %>
+      <%= card_text(class: 'text-center') do %>
+        Once you have received your numeric access token via SMS, enter the token in the field below to access the Internet.  It may take your carrier a few minutes to deliver the code to your phone.
+      <% end # card_text %>
+      <%= bootstrap_form_tag(url: { action: :account_login }, id: 'login_form_account' ) do |f| %>
+        <%= f.hidden_field(:login, value: @account.login) %>
+        <fieldset>
+          <legend class="col-12 text-center"><%= _('Enter Token') %></legend>
+          <%= f.form_group do %>
+            <%= f.password_field(:password, {label: _('Token'), label_as_placeholder: true, class: portal_form_input_classes(large: true), autocomplete: 'current-password', autocorrect: :off, autocapitalize: :off}) %>
+          <% end # form_group %>
+          <%= submit_tag(_('Sign In'), class: portal_submit_classes, data: { disable_with: _('Please wait...') }) %>
+        </fieldset>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end # card_body %>
+
+<script type="text/javascript">
+  function smsAccountCreateOnclick() {
+    document.getElementById('sms_account_create_submit').disabled = true;
+    document.getElementById('sms_account_create_form').submit();
+    return true;
+  }
+
+  function accountLoginOnclick() {
+    document.getElementById('account_login_submit').disabled = true;
+    document.getElementById('login_form_account').submit();
+    return true;
+  }
+</script>

@@ -1,0 +1,84 @@
+<% if @paid_plans.any? || @manual_ar_plans.any? %>
+  <%= f.form_group do %>
+    <% if @direct_plans.any? %>
+      <% cc_labels = %Q(
+        <i class="fab fa-cc-visa fa-lg align-middle" aria-hidden></i>
+        <i class="fab fa-cc-mastercard fa-lg align-middle" aria-hidden></i>
+        <i class="fab fa-cc-amex fa-lg align-middle" aria-hidden></i>
+        <i class="fab fa-cc-discover fa-lg align-middle" aria-hidden></i>
+      ) %>
+      <%= f.radio_button(:method, :direct, params[:method].nil? ? true : params[:method] == 'direct', label: "<span class=\"visually-hidden align-middle\">#{_('Credit Card')}</span> #{cc_labels}".html_safe, inline: true) %>
+    <% end # @direct_plans.any? %>
+
+    <% if @offsite_plans.any? %>
+      <%
+        offsite_merchants = @offsite_plans.collect(&:offsite_merchant).uniq
+        offsite_integrations = offsite_merchants.collect(&:integration).uniq
+        offsite_label = ''
+        if offsite_integrations.include?('Paypal')
+          offsite_label = "<span class=\"visually-hidden align-middle\">#{_('PayPal')}</span>  <i class=\"fab fa-cc-paypal fa-lg align-middle\" aria-hidden></i>"
+        else
+          offsite_label = offsite_merchants.collect(&:name).join(", ")
+        end # if offsite_integrations.include?('Paypal')
+        %>
+      <%= f.radio_button(:method, :offsite, params[:method] == 'offsite', label: offsite_label.html_safe, inline: true) %>
+    <% end # if @offsite_plans.any? %>
+
+    <% if @pms_plans.any? %>
+      <%= f.radio_button(:method, :pms, params[:method] == 'pms', label: "<i class=\"fas fa-concierge-bell align-middle\" aria-hidden></i> ".html_safe, inline: true) %> 
+    <% end # if @pms_plans.any?%>
+
+    <% if @manual_ar_plans.any? %>
+      <%= f.radio_button(:method, :manual, params[:method] == 'manual', label: "<i class=\"far fa-money-bill-alt align-middle\" aria-hidden></i> #{_('Cash')}".html_safe, inline: true) %>
+    <% end # if @manual_ar_plans.any? %>
+  <% end # form_group %>
+
+  <%= f.fields_for @payment_method do |f| %>
+    <%= f.form_group(class: 'row') do %>
+      <%= f.text_field(:first_name, {value: params[:first_name] || params.dig(:payment_method, :first_name), label: params[:method] == 'pms' ? _('Room Number') : _('First Name'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 2, maxlength: 254, autocomplete: 'cc-given-name', autocorrect: :off, wrapper: {class: 'col-md-6'}}) %>
+      <%= f.text_field(:last_name, {value: params[:last_name] || params.dig(:payment_method, :last_name), label: _('Last Name'), label: _('Last Name'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 1, maxlength: 254, autocomplete: 'cc-family-name', autocorrect: :off, wrapper: {class: 'col-md-6'}}) %>
+    <% end # form_group %>
+
+    <%= f.form_group(class: 'row') do %>
+      <%= f.text_field(:email, {label: _('Billing Email (Optional)'), label_as_placeholder: true, class: "#{portal_form_input_classes}", minlength: 13, maxlength: 19, autocorrect: :off, wrapper: {class: 'col-12 col-md-6'}}) %>
+    <% end %>
+    <% if @validation_plans.any? %>
+      <div id="row mb-3">
+        <div class="mb-3 col-12">
+          <span><%= _('Note: <strong>No</strong> payments will be processed until your account has been activated.').html_safe %></span>
+        </div>
+      </div>
+    <% end # if @validation_plans.any? %>
+
+    <%= f.form_group(class: 'row token_fields') do %>
+      <% if @stripe_plans.any? %>
+        <%= render_portal_partial 'stripe_form_elements' %>
+      <% end # if @stripe_plans.any? %>
+
+      <% if @cybersource_plans.any? %>
+        <%= render_portal_partial 'cybersource_form_elements' %>
+      <% end # if @cybersource_plans.any? %>
+    <% end # f.form_group %>
+
+    <%= f.form_group(class: 'row payment_fields') do %>
+      <%= f.text_field(:cc_number, {label: _('Card Number'), label_as_placeholder: true, disabled: params[:method].nil? ? false : params[:method] != 'direct', class: "#{portal_form_input_classes} cc-field", required: true, minlength: 13, maxlength: 19, pattern: '\d{13,19}', autocomplete: 'cc-number', autocorrect: :off, wrapper: {class: 'col-12 col-md-5 col-lg-12'}}) %>
+
+      <%= f.select(:cc_expiration_month, 1 .. 12, { label: _('Expiration Month'), skip_label: true, prompt: _('Month'), selected: f.object.nil? ? Time.now.month : f.object.cc_expiration_month.to_i, wrapper: {class: 'col-12 col-sm-4 col-md-2 col-lg-4'} }, { disabled: params[:method].nil? ? false : params[:method] != 'direct', class: "#{portal_form_select_classes} cc-field", required: true, autocomplete: 'cc-exp-month' }) %>
+
+      <%= f.select(:cc_expiration_year, Time.now.year .. Time.now.year + 20, { label: _('Expiration Year'), skip_label: true, prompt: _('Year'), selected: f.object.nil? ? Time.now.year : f.object.cc_expiration_year.to_i, wrapper: {class: 'col-12 col-sm-4 col-md-3 col-lg-4'} }, { disabled: params[:method].nil? ? false : params[:method] != 'direct', class: "#{portal_form_select_classes} cc-field", required: true, autocomplete: 'cc-exp-year' }) %>
+
+      <%= f.text_field(:cc_cvv2, size: 4, label: _('CVC'), label_as_placeholder: true, disabled: params[:method].nil? ? false : params[:method] != 'direct', class: "#{portal_form_input_classes} cc-field", required: true, minlength: 3, maxlength: 4, autocomplete: 'cc-csc', wrapper: {class: 'col-12 col-sm-4 col-md-2 col-lg-4'}) %>
+
+      <%= f.hidden_field :country, value: 'US' %>
+      <%= f.hidden_field :phone, value: 1234567890 %>
+    <% end # f.form_group %>
+  <% end # f.fields_for @payment_method %>
+<% else %>
+  <%= f.hidden_field :method, value: (@pms_plans.any? ? 'pms' : 'direct') %>
+  <%= f.fields_for @payment_method do |f| %>
+    <%= f.form_group(class: 'row') do %>
+      <%= f.text_field(:first_name, {value: params[:first_name] || params.dig(:payment_method, :first_name), label: params[:method] == 'pms' ? _('Room Number') : _('First Name'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 2, maxlength: 254, autocomplete: 'cc-given-name', autocorrect: :off, wrapper: {class: 'col-md-6'}}) %>
+      <%= f.text_field(:last_name, {value: params[:last_name] || params.dig(:payment_method, :last_name), label: _('Last Name'), label: _('Last Name'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 1, maxlength: 254, autocomplete: 'cc-family-name', autocorrect: :off, wrapper: {class: 'col-md-6'}}) %>
+    <% end # form_group %>
+  <% end # f.fields_for @payment_method %>
+<% end # if @paid_plans.any? %>

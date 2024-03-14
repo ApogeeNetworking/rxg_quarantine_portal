@@ -1,0 +1,26 @@
+<%= card(class: portal_card_classes) do %>
+  <%= card_body do %>
+    <%= card_title do %>
+      <%= _('Usage Remaining') %>
+    <% end # card_title %>
+    <% if @login_session.usage_bytes_down_remaining %>
+      <%= card_text do %>
+        <%= (_('You can transfer up to: <strong> %{quota} download. </strong>') % { quota: number_to_human_size(@login_session.usage_bytes_down_remaining) }).html_safe %>
+      <% end # card_text %>
+    <% end %>
+    <% if @login_session.usage_bytes_up_remaining %>
+      <%= card_text do %>
+        <%= (_('You can transfer up to: <strong> %{quota} upload.</strong>') % { quota: number_to_human_size(@login_session.usage_bytes_up_remaining) }).html_safe %>
+      <% end # card_text %>
+    <% end %>
+    <% if @login_session.expires_at && @login_session.online? %>
+      <%= card_text do %>
+        <%= (_('Your online session <strong>expires in %{time}</strong> on %{date}.') % { time: distance_of_time(@login_session.online_minutes_remaining.minutes, highest_measures: 2), date: l(@login_session.expires_at) }).html_safe %>
+      <% end # card_text %>
+    <% else %>
+      <%= card_text do %>
+        <%= _('Your online session <strong> never expires. </strong>').html_safe %>
+      <% end # card_text %>
+    <% end # @login_session.expires_at && @login_session.online? %>
+  <% end # card_body %>
+<% end # card %>

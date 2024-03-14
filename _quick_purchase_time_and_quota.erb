@@ -1,0 +1,12 @@
+<%
+  has_optional_time_plans = (!usage_plan.time_plan.try(:unlimited_usage_minutes?) && (usage_plan.time_plan || usage_plan.optional_time_plans.exists?))
+
+  has_optional_quota_plans = usage_plan.optional_quota_plans.exists? || (usage_plan.quota_plan && !usage_plan.quota_plan.unlimited_usage_mb_up? && !usage_plan.quota_plan.unlimited_usage_mb_down?)
+%>
+<% if has_optional_time_plans || has_optional_quota_plans %>
+  <div id="plan-time-quota-<%= usage_plan.id %>" class="quick-purchase-usage-plan" style="display: none;" %>
+    <%= render_portal_partial('quick_purchase_time', locals: { usage_plan: usage_plan, subscription: subscription, show_optional: has_optional_time_plans, f: f}) %>
+
+    <%= render_portal_partial('quick_purchase_quota', locals: { usage_plan: usage_plan, subscription: subscription, show_optional: has_optional_quota_plans, f: f}) %>
+  </div>
+<% end # if has_optional_time plans || has_optional_quota_plans %>

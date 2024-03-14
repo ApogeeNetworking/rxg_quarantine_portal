@@ -1,0 +1,38 @@
+<% available_devices = @current_account_or_token.devices.portal_visible.where(Device.arel_table[:lan_party_id].eq(nil).or(Device.arel_table[:lan_party_id].not_eq(party.id))) %>
+<%=
+  modal(id: "accept_invite_#{party.id}", size: :xl, aria_labelled_by: "accept-#{party.id}-title", content: {class: ["#{'bg-dark' if @dark_mode}"]}) do
+%>
+  <%= modal_header(close: 'light') do %>
+    <%= modal_title(id: "accept-#{party.id}-title") do %>
+      <%= _('Accept Lan Party Invite') %>
+
+    <% end # modal_title %>
+  <% end #modal_header %>
+  <%= modal_body do %>
+    <p>
+      <%= _('<strong>WARNING:</strong> By accepting this invitation, the devices you select below will be placed into the private network of the account shown, allowing direct access and sharing of resources with another account. Do not accept an invitation from someone you do not know and trust.').html_safe %>
+    </p>
+    <%= bootstrap_form_tag(url: {action: :accept_lan_party_invitation, id: party.id}, id: "accept-#{party.id}-form") do |f| %>
+      <fieldset>
+      <legend><%= _("Available Devices") %></legend>
+        <% available_devices.each do |device| %>
+          <%= f.form_group do %>
+            <%= f.check_box("device_ids[]", { checked: party.devices.include?(device), label: [device.name, device.mac].uniq.join(' ') }, device.id, nil) %>
+          <% end # f.form_group %>
+        <% end # available_devices.each %>
+        <% if available_devices.exists? %>
+          <%= f.form_group do %>
+            <%= f.submit(_("Accept"), class: portal_submit_classes, disabled: party.host_account.party_device_limit_reached?, data: {disable_with: _('Please Wait...')}) %>
+          <% end # f.form_group %>
+        <% else %>
+          <%= f.form_group do %>
+            <p><%= _('No available devices.') %></p>
+          <% end # f.form_group %>
+        <% end # if available_devices.exists? %>
+      </fieldset>
+    <% end # bootstrap_form_tag %>
+  <% end # modal_body %>
+  <%= modal_footer do %>
+    <%= modal_footer_close_button(_('Cancel')) %>
+  <% end # modal_footer %>
+<% end # modal %>

@@ -1,0 +1,59 @@
+<%
+  email_help ||= nil
+  phone_help ||= nil
+  validation_help = "<i class=\"fas fa-check-square fa-sm text-primary\"></i>&nbsp;#{_('Validated')}".html_safe
+  email_help = validation_help if f.object.email_validated?
+  phone_help = validation_help if f.object.phone_validated?
+%>
+<fieldset>
+  <legend><%= _('Account Info') %></legend>
+
+  <%= f.form_group(class: 'row') do %>
+    <%= f.email_field(:email, {label: _('Email address'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 3, maxlength: 254, autocomplete: 'email', autocorrect: :off, autocapitalize: :off, spellcheck: false, wrapper: {class: 'col-12 col-md-6'}, help: email_help}) %>
+
+    <%= f.text_field(:login, {label: _('Username'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 2, maxlength: 254, autocomplete: 'username', autocorrect: :off, autocapitalize: :off, spellcheck: false, wrapper: {class: 'col-12 col-md-6'}}) %>
+
+    <%= f.password_field(:password, {label: _('Password'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 2, maxlength: 40, autocomplete: 'new-password', autocorrect: :off, autocapitalize: :off, spellcheck: false, wrapper: {class: 'col-12 col-md-6'}}) %>
+
+    <%= f.password_field(:password_confirmation, {label: _('Password Confirmation'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 2, maxlength: 40, autocomplete: 'new-password', autocorrect: :off, autocapitalize: :off, spellcheck: false, wrapper: {class: 'col-12 col-md-6'}}) %>
+
+    <% if VlanTagAssignment.find_by(mac: client_mac).try(:supports_wlan_dpsk?) %>
+      <%= f.text_field(:pre_shared_key, {label: _('Wireless Pre-Shared Key'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 8, maxlength: 63, pattern: '\A\p[\x00-\x7F]+\z', autocomplete: :off, autocorrect: :off, autocapitalize: :off, spellcheck: false}) %>
+    <% end # if if VlanTagAssignment.find_by(mac: client_mac).try(:supports_wlan_dpsk?) %>
+  <% end # f.form_group %>
+</fieldset>
+
+<fieldset>
+  <legend><%= _('Name') %></legend>
+  <%= f.form_group(class: 'row', style: 'margin-bottom: 0 !important;') do %>
+    <%= f.text_field(:first_name, {label: _('First name'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 2, maxlength: 254, autocomplete: 'given-name', autocorrect: :off, wrapper: {class: 'col-12 col-md-6'}}) %>
+    <%= f.text_field(:last_name, {label: _('Last name'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 1, maxlength: 254, autocomplete: 'family-name', autocorrect: :off, wrapper: {class: 'col-12 col-md-6'}}) %>
+    <%= f.email_field(:email2, {label: _('Email address 2'), label_as_placeholder: true, class: portal_form_input_classes, maxlength: 254, autocomplete: 'email', autocorrect: :off, autocapitalize: :off, spellcheck: false, wrapper: {class: 'col-12 col-md-6'}}) %>
+    <%= f.telephone_field(:phone, {label: _('Phone'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 1, maxlength: 32, autocomplete: 'tel', wrapper: {class: 'col-12 col-md-6'}, help: phone_help}) %>
+  <% end # f.form_group %>
+</fieldset>
+
+<fieldset>
+  <legend><%= _('Address') %></legend>
+  <%= f.form_group(class: 'row') do %>
+    <%= f.text_field(:address1, {label: _('Street Address'), label_as_placeholder: true, class: portal_form_input_classes, autocomplete: 'address-line1', autocorrect: :off, autocapitalize: :off}) %>
+    <%= f.text_field(:city, {label: _('City'), label_as_placeholder: true, class: portal_form_input_classes, autocomplete: 'address-level2', autocorrect: :off, autocapitalize: :off, wrapper: {class: 'col-12 col-md-4'}}) %>
+    <%= f.text_field(:region, {label: _('State'), label_as_placeholder: true, class: portal_form_input_classes, wrapper: {class: 'col-12 col-sm-6 col-md-4'}, autocomplete: 'address-level1', autocorrect: :off, autocapitalize: :off}) %>
+    <%= f.text_field(:zip, {label: _('Zip Code'), label_as_placeholder: true, class: portal_form_input_classes, wrapper: {class: 'col-12 col-sm-6 col-md-4'}, autocomplete: 'postal-code', autocorrect: :off, autocapitalize: :off}) %>
+    <div class="col-12 mb-3">
+      <%= f.localized_country_select(:country, priority_countries=['US', 'CA'], {}, { class: portal_form_select_classes }) %>
+    </div>
+  <% end # f.form_group %>
+</fieldset>
+
+<fieldset>
+  <legend><%= _('Account Recovery') %></legend>
+  <%= f.form_group(class: 'row') do %>
+    <%= f.fields_for(@secret_question) do |f| %>
+      <%= f.select(:id, SecretQuestion.all.collect {|f| [ f.question, f.id ] }, { label: _('Secret Question'), label_as_placeholder: true }, { class: portal_form_select_classes }) %>
+    <% end # f.fields_for(@secret_question) %>
+    <%= f.fields_for(@secret_answer) do |f| %>
+      <%= f.text_field(:answer, {label: _('Answer'), label_as_placeholder: true, class: portal_form_input_classes, autocomplete: :off, autocorrect: :off, autocapitalize: :off}) %>
+    <% end # f.fields_for(@secret_answer) %>
+  <% end # f.form_group %>
+</fieldset>

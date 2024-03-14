@@ -1,0 +1,182 @@
+<%
+  # optionally override the Merchant to be used when rendering this partial (via
+  # a "locals" variable), for when a UsagePlan is associated with more than one
+  # Merchant, and the portal end-user has selected a payment option other than
+  # the plan's "primary" (i.e., direct) Merchant
+  merchant ||= usage_plan.offsite_merchant
+
+  # reset offsite_payments global "mode" to be what is configured in the
+  # desired Merchant. this ultimately changes the URL the button POSTs to
+  # (production or test server).
+  OffsitePayments.mode = merchant.test? ? :test : :production
+
+  # get the name of the active_merchant Integration class as configured by the
+  # desired Merchant
+  integrations_class_name = merchant.integrations_class_name
+
+  # generate a string to uniquely identify a Account + UsagePlan so we can pass it
+  # along to offsite payment gateways and use it to credit the Account with the
+  # correct UsagePlan upon receiving the notification request.
+  account_and_usage_plan_id = sprintf('%i-%i', account.id, usage_plan.id)
+
+  # generate a unique invoice based on the Account, UsagePlan, and current time
+  # (minutes since epoch). addition of the time (or something in addition to
+  # account and plan) is necessary to avoid subsequent transactions from the same
+  # account being marked as duplicate.
+  invoice = sprintf('%i-%i-%i', usage_plan.id, account.id, Time.now.to_i / 60)
+  # prepend the configurable prefix
+  # behavior (format) here should match that in UsagePlan#charge_merchant
+  invoice_prefix = merchant.invoice_prefix.to_s
+  unless invoice_prefix.empty?
+    # note that Authorize.Net SIM will truncate the invoice to the first 20
+    # characters, thus the invoice will not be unique if the prefix is too long.
+    invoice = sprintf('%s-%s', invoice_prefix, invoice)
+  end
+
+  # come up with something for the "order" string, which is mapped to different
+  # params in the offsite post, depending on the integration/API
+  order = case integrations_class_name
+    # Note that technically AuthorizeNetSim is no longer supported by Authorize.Net
+    when 'AuthorizeNetSim' then
+      # Authorize.Net SIM: [ 'x_fp_sequence' ]
+      # The merchant assigned sequence number for the transaction
+      # The sequence number can be a merchant assigned value, such as an invoice number or any randomly generated number.
+      invoice
+    when 'FirstData' then
+      # First Data: [ 'x_fp_sequence' ]
+      # Can be a random number. Used in x_fp_hash calculation in order to make it
+      # unique but not used otherwise. Returned with Relay Response / Silent Post /
+      # Receipt Link. No length restriction.
+      invoice
+    else
+      # PayPal: [ 'item_number', 'custom' ]
+      # we rely on this string being present in the IPN request later
+      account_and_usage_plan_id
+  end
+
+  # determine the "account" string, which is just the merchant login
+  # PayPal: 'business'
+  # Authorize.Net SIM: 'x_login'
+  merchant_account = merchant.login
+
+  # generate and insert the HTML for the button that redirects the end-user to
+  # the offsite payment gateway, passing along the details of the purchase
+
+  # payment express (pxpay) requires additional fields on the options hash:
+  #  return_url
+  #  credential2 -- PxPayKey
+
+  options_hash = {
+    amount: usage_plan.price,
+    currency: usage_plan.currency,
+    service: integrations_class_name,
+    html: { id: 'offsite_purchase_button' }
+  }
+  if integrations_class_name == "Pxpay"
+    options_hash[:return_url] = url_for(only_path: false, action: :pxpay_ipn)
+    options_hash[:credential2] = merchant.password
+  end
+
+  payment_service_for(order, merchant_account, options_hash
+
+  ) do |service|
+
+    # Authorize.Net SIM / First Data specifics
+    #
+    # Note that technically AuthorizeNetSim is no longer supported by Authorize.Net
+    if integrations_class_name == 'AuthorizeNetSim' || integrations_class_name == 'FirstData'
+      # necessary for the POST to be accepted by Authorize.Net or First Data
+      service.setup_hash(transaction_key: merchant.password, order_timestamp: Time.now)
+
+      # cannot set the "order" ('x_fp_sequence') param to the Account+UsagePlan id
+      # because any subsequent payments from the same Account for the same
+      # UsagePlan are detected as being duplicates by Authorize.Net. so we use
+      # the 'customer_id' instead, which is included in the notification
+      # request.
+      service.customer_id(account_and_usage_plan_id)
+
+      # customizable header at the top of the offsite form. this can be changed
+      # as desired.
+      service.payment_header(_('Purchasing the "%{plan}" Usage Plan' ) % { plan: usage_plan.name })
+
+      # add the Usage Plan as a line item in the offsite form. this seems to be
+      # purely asthetic and does not actually affect the amount to be charged,
+      # so can be changed as desired.
+      unless usage_plan.description.blank? # the fields CANNOT be blank
+        service.add_line_item(
+          line_title: usage_plan.name,
+          name: usage_plan.description,
+          quantity: 1,
+          unit_price: usage_plan.price
+        )
+      end
+    end
+
+    # Properly set the Ecommerce_flag for First Data transactions. This affects
+    # the per-transaction cost paid by the merchant account (operator).
+    if integrations_class_name == 'FirstData'
+        # https://firstdata.zendesk.com/entries/21531261-ecommerce-flag-values
+        #
+        # 7 – ECI Indicator – Channel Encrypted Transaction: designates a
+        # transaction between a cardholder and a merchant consummated via the
+        # Internet where the transaction includes the use of transaction
+        # encryption such as SSL, but authentication was not performed. The
+        # cardholder payment data was protected with a form of Internet
+        # security, such as SSL, but authentication was not performed.
+        #
+        service.add_custom_field('Ecommerce_flag', 7)
+    end
+
+    # pass along the invoice string
+    service.invoice(invoice)
+
+    # pass along the name of the "item" (plan) being purchased
+    service.item_name(usage_plan.name)
+
+    # pass along the customer's details
+    service.customer(first_name: @current_account.first_name,
+      last_name: @current_account.last_name, email: @current_account.email)
+
+    # all supported offsite merchants have a corresponding ipn action method
+    # defined in PortalController.
+    ipn_action = sprintf('%s_ipn', integrations_class_name.downcase)
+
+    if integrations_class_name == 'FirstData'
+      # AUTO POST to x_receipt_link_url. Preferred beacuse x_relay_url (relay
+      # response) cannot be dynamic.
+      service.return_url(url_for(only_path: false, action: ipn_action))
+      # Relay Response (x_relay_url).
+      # Un-comment and comment-out above service.return_url... line
+      # service.notify_url(url_for(only_path: false, action: ipn_action))
+    else
+      # tell the offsite gateway what URL it should post back to in the background
+      # after a successfull payment (e.g., PayPal IPN handler).
+      #
+      # PayPal: the end-user never encounters this URL or its result
+      # Authorize.Net SIM: the end-user is presented with the HTML produced by this URL
+      service.notify_url(url_for(only_path: false, action: ipn_action))
+
+      # tell the offsite gateway what URL the end-user should be linked/redirected
+      # to after a successfull payment.
+      #
+      # PayPal: end-user is presented with a link to this URL
+      # Authorize.Net SIM: not used, end-user sees result of the notify_url
+      service.return_url(url_for(only_path: false, action: :offsite_return))
+
+      # tell the offsite gateway what URL the end-user should be linked/redirected
+      # to in the event she cancels the payment.
+      service.cancel_return_url(url_for(only_path: false, action: :index))
+    end
+%>
+
+    <!-- still within payment_service_for() block -->
+
+    <!-- insert the image submit tag for the payment button -->
+    <% if integrations_class_name == 'Paypal' %>
+      <!-- PayPal likes you to use their special "pay now" button -->
+        <%= image_submit_tag 'https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-medium.png', class: 'submit_button' %>
+    <% else %>
+      <!-- Authorize.Net SIM and FirstData don't seem to have a cool button to use -->
+      <%= button_tag(_('Purchase'), class: 'btn btn-lg btn-primary col-6 mx-auto', data: { disable_with: _('Please wait...') }) %>
+    <% end %>
+<% end # payment_service_for() block %>

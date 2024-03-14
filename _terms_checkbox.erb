@@ -1,0 +1,9 @@
+<% if @effective_portal.try(:require_tos_inline?) %>
+  <% tos_id = "tos-#{SecureRandom.uuid}" %>
+  <div class="form-check">
+    <input id="<%= tos_id %>" type="checkbox" name="terms" value="terms" class="form-check-input" required />
+    <label class="form-check-label" for="<%= tos_id %>">
+      <%= _('I accept the <a href="#terms-modal" class="text-primary" style="text-decoration:underline;" data-bs-toggle="modal">Terms of Service</a>').html_safe %>
+    </label>
+  </div>
+<% end %>

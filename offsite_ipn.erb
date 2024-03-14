@@ -1,0 +1,43 @@
+<% first_data_success = (@integrations_class_name == 'FirstData') && @notify && @notify.complete? && @acknowledged %>
+<div class="row">
+  <div class="col-12">
+    <h2 class='text-center'><%= _('Offsite IPN') %></h2>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <% if first_data_success %>
+
+      <pre>
+      <%= _('Thank you for your order!') %>
+
+      <%= @notify.response_reason_text %>
+
+      <%= _('Order Information') %>
+      <%= _('Invoice:') %>
+      <%= @notify.invoice_num %>
+      <%= _('Usage') %> Plan: <%= @usage_plan.name %>
+      <%= _('Account:') %> <%= @account.login %>
+
+      <%= _('Billing Information') %>
+      <%= _('%{first} %{last}') % { first: @notify.billing_address[:first_name], last: @notify.billing_address[:last_name] } %>
+      <%= @notify.billing_address[:email] %>
+
+      <%= _('Total: US $%{amount}') % { amount: @notify.gross } %>
+
+      <%= params[:x_card_type] %>
+      <%= _('Date/Time:') %> <%= l(Time.now) %>
+      <%= _('Transaction ID:') %> <%= @notify.transaction_id %>
+      </pre>
+
+    <% elsif (@integrations_class_name == 'FirstData') %>
+      <%= _('Payment not complete, or merchant configuration incorrect.  Please contact support.') %>
+    <% end %>
+    <!-- else, end-user does not see this for PayPal -->
+  </div>
+</div>
+<% if first_data_success %>
+  <!-- First Data end-user is redirected to this page, so go ahead and render login information -->
+  <%= render_portal_partial 'login_success' %>
+<% end %>

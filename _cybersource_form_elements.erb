@@ -1,0 +1,131 @@
+<%
+if ( usage_plan ||=
+  [ @usage_plan, @current_account_or_token.try(:usage_plan), @cybersource_plans.first ]
+    .compact.select {|p| p.is_cybersource?}.first
+)
+  merchant ||= usage_plan.direct_merchant
+%>
+
+    <script src="<%= merchant.gateway_js_url %>"></script>
+    <style>
+      #number-container,
+      #securityCode-container,
+      #expirationMonth,
+      #expirationYear {
+        height: calc(1.5em + 1rem + 2px);
+        padding: .5rem 1rem;
+        font-size: 1.25rem;
+        line-height: 1.5;
+        border-radius: .3rem;
+        font-weight: 400;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        box-shadow: 0px 3px 6px var(--dropShadow);
+        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+      }
+      #number-container,
+      #securityCode-container {
+        display: block;
+      }
+      .flex-microform-focused {
+        background: lightyellow;
+      }
+      .flex-microform-valid {
+        background: green;
+      }
+      .flex-microform-valid.flex-microform-focused {
+        background: lightgreen;
+      }
+      #errors-output {
+        color: var(--primary);
+      }
+    </style>
+
+    <input type="hidden" id="capture-context" value="<%= merchant.capture_context %>">
+    <!-- Containers in which we will load microform -->
+    <div class="row mb-3">
+      <div class="mb-2 col-12">
+        <div id="number-container"></div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="mb-2 col-12">
+        <div id="securityCode-container"></div>
+      </div>
+    </div>
+
+    <div id="errors-output"></div>
+
+    <div class="row mb-3">
+      <div class="mb-2 col-6">
+        <label for="expirationMonth"><%= _('Expiration Month') %></label>
+        <input id="expirationMonth" placeholder="MM" maxLength="2" size="3" />
+      </div>
+      <div class="mb-2 col-6">
+        <label for="expirationYear"><%= _('Expiration Year') %></label>
+        <input id="expirationYear" placeholder="YYYY" maxLength="4" size="6" />
+      </div>
+    </div>
+
+    <script>
+      function cyberSourceFormOnSubmit() {
+        var form = document.querySelector('#payment_form');
+        var errorsOutput = document.querySelector('#errors-output');
+        var options = {
+          expirationMonth: document.querySelector('#expirationMonth').value,
+          expirationYear: document.querySelector('#expirationYear').value
+        };
+
+        microform.createToken(options, function (err, token) {
+          if (err) {
+            // handle error
+            console.error(err);
+            var details = err.details.map(function(e){ return e.location + ': ' + e.message });
+            console.error(details);
+            errorsOutput.textContent = err.message + " " + details.join(', ');
+          } else {
+            console.log("card tokenized successfully");
+            // append a hidden input to the form and submit it.
+            const hiddenInput = document.createElement('input');
+            hiddenInput.setAttribute('type', 'hidden');
+            hiddenInput.setAttribute('name', 'cybersourceToken');
+            hiddenInput.setAttribute('value', token);
+            form.appendChild(hiddenInput);
+
+            form.submit();
+          }
+        });
+        return false;
+      }
+
+      // initialize the flex microform on page load
+      $(function(){
+        // get the capture context that was requested server-side for this transaction
+        var captureContext = $('#capture-context').val();
+
+        // custom styles that will be applied to each field we create using Microform
+        var myStyles = {
+        'input': {
+          'font-size': '1.25em',
+          'font-family': 'helvetica, tahoma, calibri, sans-serif'
+        },
+        ':focus': { 'color': 'blue' },
+        ':disabled': { 'cursor': 'not-allowed' },
+        'valid': { 'color': '#3c763d' },
+        'invalid': { 'color': '#a94442' }
+        };
+
+        // setup
+        var flex = new Flex(captureContext);
+        microform = flex.microform({ styles: myStyles });
+        var number = microform.createField('number', { placeholder: '<%= _('Card number...') %>' });
+        var securityCode = microform.createField('securityCode', { placeholder: '<%= _('Security code...') %>' });
+        number.load('#number-container');
+        securityCode.load('#securityCode-container');
+      });
+    </script>
+<% end %>

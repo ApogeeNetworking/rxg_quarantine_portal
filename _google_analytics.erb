@@ -1,0 +1,24 @@
+<% if @custom_portal %>
+  <% if web_property = @custom_portal.google_analytics_web_property.presence %>
+    <script type="text/javascript">
+      var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+      document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+    <script type="text/javascript">
+      try{
+      var pageTracker = _gat._getTracker("<%= web_property %>");
+      pageTracker._trackPageview();
+      } catch(err) {}
+    </script>
+  <% elsif measurement_id = @custom_portal.google_analytics_measurement_id.presence %>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<%= measurement_id %>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '<%= measurement_id %>');
+    </script>
+  <% end %>
+<% end %>

@@ -1,0 +1,56 @@
+<% show_optional ||= false %>
+<% if show_optional %>
+  <%= _('Time') %>
+  <p>
+    <% if (subscription.max_devices && subscription.max_devices > 1) || usage_plan.plan_addons.of_component_type(:max_devices).exists? %> 
+      <%= _('Usage Time is an allotment of Internet access time which may be shared among your devices. Additional simultaneous login sessions results in faster depletion of your usage time.<br>Additional simultaneous login sessions results in faster depletion of your usage time.').html_safe %>
+    <% else %>
+      <%= _('Usage Time is an allotment of Internet access time.') %>
+    <% end %>
+  </p>
+
+  <% if (usage_plan.time_plan && !usage_plan.time_plan.unlimited_usage_minutes?) %>
+    <b><%= _('Included with Plan:') %></b>
+    <%= usage_plan.time_plan.usage_display %>
+    <% if usage_plan.time_plan.rollover_usage_minutes %>
+      : <%= _('existing time is rolled-over.') %>
+    <% end %>
+    <%= render_portal_partial 'time_plan', object: usage_plan.time_plan, locals: {usage_plan: usage_plan, subscription: subscription} %>
+  <% elsif usage_plan.time_plan && !usage_plan.time_plan.price_free? %>
+    <span class="included_price_element d-none" data-price="<%= usage_plan.time_plan.price %>"></span><
+  <% end %>
+
+  <% if usage_plan.optional_time_plans.exists? %>
+    <b><%= _('Optional Time configurations:') %></b>
+    <%= f.select(
+          "[#{usage_plan.id}][time_plan_id]",
+          options_for_select(
+            [
+              usage_plan.time_plan ?
+                [
+                  "#{usage_plan.time_plan.name} (#{usage_plan.time_plan.price_display(currency_unit: usage_plan.currency_unit)}) -- #{_('included with plan')}",
+                  usage_plan.time_plan.id,
+                  { 'data-toggle' => "collapse", 'data-target' => "\#time_plan_#{usage_plan.id}_#{usage_plan.time_plan_id}" }
+                ] : nil
+            ].compact +
+            usage_plan.optional_time_plans.map { |time_plan|
+              [
+                "#{time_plan.name} (#{time_plan.price_display(currency_unit: usage_plan.currency_unit)})",
+                time_plan.id,
+                { 'data-toggle' => "collapse", 'data-target' => "\#time_plan_#{usage_plan.id}_#{time_plan.id}" }
+              ]
+            },
+            @subscription.time_plan_id
+          ),
+
+          { include_blank: usage_plan.time_plan ? false : _('- No addon selected -'),
+            id: nil,
+            class: "#{portal_form_select_classes} plan_addon_toggle"
+          } ) %>
+    <% usage_plan.optional_time_plans.each do |time_plan| %>
+      <%= render_portal_partial 'time_plan', object: time_plan, locals: {usage_plan: usage_plan, subscription: subscription} %>
+    <% end %>
+  <% end %>
+<% elsif usage_plan.time_plan && !usage_plan.time_plan.price_free? %>
+  <span class="included_price_element d-none" data-price="<%= usage_plan.time_plan.price %>"></span>
+<% end # if has_optiona_time_plans %>

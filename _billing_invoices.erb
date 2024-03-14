@@ -1,0 +1,8 @@
+<%= card(class: portal_card_classes) do %>
+  <%= card_body do %>
+    <%= card_title do %>
+      <%= _('Billing History') %>
+    <% end # card_title %>
+    <%= render_portal_partial 'invoices' %>
+  <% end # card_body %>
+<% end # card %>

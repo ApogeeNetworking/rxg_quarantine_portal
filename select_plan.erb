@@ -1,0 +1,11 @@
+<%= bootstrap_form_tag(url: {action: 'quick_purchase'}) do |f| %>
+  <%= f.hidden_field :email, value: params[:email] %>
+  <%= f.hidden_field :login, value: params[:login] %>
+  <%= f.hidden_field :password, value: params[:password] %>
+  <%= f.hidden_field :password_confirmation, value: params[:password_confirmation] %>
+  <div id="select-plan" class="row justify-content-center p-5 row-cols-sm-1 row-cols-md-3 gx-3 gy-3 quick-purchase-step select-plan-step">
+    <% @usage_plans.each do |usage_plan| %>
+      <%= render_portal_partial('usage_plan_summary', locals: {usage_plan: usage_plan, f: f}) %>
+    <% end %>
+  </div>
+<% end %>

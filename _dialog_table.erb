@@ -1,0 +1,22 @@
+<%= instruments_dialog(type: dialog[:color], dialog_id: "#{dialog[:name]}_dialog") do %>
+  <%= render_portal_partial(dialog_partial_path("dialog_color_reason"), locals: { dialog: dialog }) %>
+  <% if (title = dialog[:title]) %>
+    <h4><%= dialog[:title] %></h4>
+  <% end # if (title = dialog[:title]) %> 
+  <% dialog_id = [dialog[:name], dialog[:widget_id]].join('_') %>
+  <%= table(dark: @dark_mode, small: true, id: dialog_id) do %>
+    <%= table_header do %>
+      <%= table_row do %>
+        <% dialog[:table][:headers].each do |th| %>
+          <%= table_heading do %>
+            <%= th %> 
+          <% end # table_heading %>
+        <% end # dialog[:table][:headers].each %>
+      <% end # table_row %>
+    <% end # table_header  %>
+    <%= table_body(id: dialog_id) do %>
+      <%= render_portal_partial(dialog_partial_path("table_rows"), locals: { rows: dialog[:table][:rows] }) %>
+    <% end # table_body %>
+    <%= render_portal_partial(dialog_partial_path("dialog_footer"), locals: { dialog: dialog }) %>
+  <% end # table %>
+<% end %>
