@@ -1,0 +1,58 @@
+/* BEGIN MESSAGE FLASH */
+
+.formError {
+  color: var(--danger) ;
+}
+
+/* END MESSAGE FLASH */
+
+/* Style for error messages */
+
+/* ruby on rails input field with an error, emulate uk-form-danger */
+.field_with_errors input[type="text"],
+.field_with_errors input[type="password"],
+.field_with_errors input[type="select"],
+.field_with_errors input[type="radio"],
+.field_with_errors input[type="checkbox"] {
+  border: 1px solid var(--danger);
+}
+
+/* ruby on rails error text */
+div#errorExplanation {
+  margin: 0px;
+  padding: 0px;
+}
+
+div#errorExplanation h2 {
+  border: 0px none white;
+  color: var(--danger);
+  font-weight: bold;
+  border-bottom: 1px solid var(--danger);
+  font-size: 10px;
+  line-height: 13px;
+  padding-top: 8px;
+  padding-bottom: 3px;
+}
+
+div#errorExplanation p {
+  border: 0px none white;
+  color: var(--danger);
+  font-size: 9px;
+  line-height: 12px;
+}
+
+div#errorExplanation li {
+  color: var(--danger);
+  font-size: 9px;
+  line-height: 12px;
+  list-style: none;
+  padding-bottom: 5px;
+}
+
+div#errorExplanation ul {
+  padding-left: 0;
+}
+
+span.errorExplanation {
+  color: var(--danger);
+}
