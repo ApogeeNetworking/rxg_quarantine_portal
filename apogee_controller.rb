@@ -20,6 +20,13 @@ class Portal::ApogeeController < PortalController
 
   # Strip important params that may still have trailing garbage from bad forms. Prevents record
   # validation errors.
+ 
+
+  # remove the # infront of the two lines below this to enable the controller mod
+  # that allows you to view the page without a transient membership (for testing)
+  # def quarantine_trigger
+
+  # end
   
   def strip_params
     # Check top-level and common nested params
