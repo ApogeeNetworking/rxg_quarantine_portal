@@ -1,0 +1,47 @@
+<%
+  toggler = "Pre-Shared Key&nbsp;".html_safe
+  can_add_devices = (@current_account_or_token.unlimited_devices? || @current_account_or_token.devices.portal_visible.count < @current_account_or_token.max_devices)
+  wlan = @current_account_or_token.policy.try(:wlan)
+  should_show_qr = wlan.try(:ssid).present? && can_add_devices
+%>
+<%= card_title do %>
+  <%= _('Manage Wireless') %>
+<% end # card_title %>
+
+<%= card_text do %>
+  <%= _("Setting an encryption key enables you to update the wireless passphrase used to encrypt your wireless traffic. After updating your pre-shared key, you will need to update your device's wireless settings to use the new key. Only devices registered to your account may use this key.  To onboard a new device, add its mac to your device list above. Pre-shared keys must be at least 8 characters.") %>
+<% end # card_text %>
+<%= bootstrap_form_for( @current_account_or_token, as: :current_account_or_token, url: { action: :psk_update },
+  html: { name: 'account_form', id: 'account_form' }) do |f| %>
+  <%= render_portal_partial('form_errors', locals: { f: f }) %>
+
+  <%= f.form_group(class: 'row') do %>
+    <%= f.text_field :pre_shared_key, label: _('WPA2 Pre-shared Key'), label_as_placeholder: true, class: portal_form_input_classes, wrapper: {class: 'col-10 col-sm-8'} %>
+    <a href="#" id="togglePSKVisibility" alt="<%= _('Toggle PSK Visibility') %>" title="<%= _('Toggle PSK Visibility') %>" aria-controls="#current_account_or_token_pre_shared_key" class="col-1"><%= fa_icon(style: :solid, icon: 'eye', size: :x2) %></a>
+    <div class="col-12 col-sm-3 mb-3 d-flex">
+      <%= f.submit(_('Update'), class: "#{portal_submit_classes} w-100", data: { disable_with: _('Please wait...'), confirm: "Changing this value will cause your wireless encryption configuration to change.\n\nYou must update the settings on your wireless device after changing.\n\nContinue?" }) %>
+    </div>
+  <% end # form_group %>
+<% end # bootstrap_form_for %>
+
+<% if should_show_qr %>
+  <div class="my-3 d-flex justify-content-center align-items-center">
+    <%= render_portal_partial 'qr_code_login', locals: { wlan: wlan } %>
+  </div>
+<% end # should_show_qr %>
+
+<script>
+  $('#togglePSKVisibility').click((event) => {
+    event.preventDefault()
+    $('#togglePSKVisibility>i')
+    .toggleClass('fa-eye')
+    .toggleClass('fa-eye-slash')
+    const inputField = $('#current_account_or_token_pre_shared_key')
+    const type = inputField.prop('type')
+    console.log(type)
+    inputField.prop('type', type === 'password' ? 'text' : 'password')
+  })
+  $(() => {
+    $('#current_account_or_token_pre_shared_key').prop('type', 'password')
+  })
+</script>

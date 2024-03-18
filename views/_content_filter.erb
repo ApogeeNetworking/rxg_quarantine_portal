@@ -1,0 +1,34 @@
+<% categories = params[:CATEGORIES].to_s.split(',') %>
+<%= card_body do %>
+  <%= card_title do %>
+    <%= _('Content Not Permitted') %>
+  <% end # card_title %>
+  <%= fa_icon(style: :solid, icon: 'ban', size: :x10, class: 'text-danger mb-5' ) %>
+  <dl>
+    <dt>
+      <%= _('Denied URL') %>
+        
+    </dt>
+    <dd>
+      <%= link_to(params[:DENIEDURL], params[:DENIEDURL]) %> 🚫
+    </dd>
+    <!--
+    <dt>
+      Reason
+    </dt>
+    <dd>
+      <%= params[:REASON] %>
+    </dd>
+     -->
+    <% if categories.any? %>
+      <dt>
+        Categories
+      </dt>
+      <% categories.each do |category| %>
+        <dd>
+          <%= category.to_s.sub(/.*-/, '') %> 🚫
+        </dd>
+      <% end # categories.each %>
+    <% end # if categories.any? %>
+  </dl>
+<% end # card_body %>

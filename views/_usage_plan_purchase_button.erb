@@ -1,0 +1,29 @@
+<% link ||= false %>
+<% if @current_account %>
+  <% if @current_account.validation_pending?(usage_plan) %>
+    <%= button(_('Validate Account'), url: { action: :usage_plan_purchase, id: usage_plan.id }, context: :primary, size: :sm, class: 'd-block mx-auto', style: 'max-width: 250px;', link: link, data: { disable_with: _('Please wait...') } ) %>
+  <% else %>
+    <%
+      offsite_merchant = usage_plan.offsite_merchant
+      direct_merchant = usage_plan.direct_merchant
+      pms_merchant = usage_plan.pms_server
+    %>
+    <!-- do not render an offsite purchase button (e.g., PayPal buy it now
+    button) if the usage plan price is zero, due to the account having
+    credits greater than or equal to the usage plan price -->
+    <% if offsite_merchant && ! usage_plan.price_free? %>
+      <%= render_portal_partial('offsite_purchase_button', locals: { account: @current_account, usage_plan: usage_plan, merchant: merchant }) %>
+    <% end # offsite_merchant && ! usage_plan.price_free? %>
+    <% if direct_merchant || pms_merchant || usage_plan.price_free? || usage_plan.manual_ar? %>
+      <% link_text = _('Purchase this plan') %>
+      <% if @subscription %>
+        <% if usage_plan == @subscription.usage_plan %>
+          <% link_text = _('Recharge this plan') %>
+        <% else %>
+          <% link_text =_('Upgrade to this plan') %>
+        <% end # if usage_plan == @subscription.usage_plan %>        
+      <% end # if @subscription%>
+      <%= button(link_text, url: { action: :usage_plan_purchase, id: usage_plan.id }, context: :primary, size: :sm, class: 'd-block mx-auto', style: 'max-width: 250px;', link: link, data: { disable_with: _('Please wait...') } ) %>
+    <% end # direct_merchant || usage_plan.price_free? %>
+  <% end # @current_account.validation_pending?(usage_plan) %>
+<% end # if @current_account %>

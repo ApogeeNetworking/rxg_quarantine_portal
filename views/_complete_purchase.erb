@@ -1,0 +1,10 @@
+<%= card_body do %>
+  <%= card_title do %>
+    <%= _('Complete your purchase') %>
+  <% end # card_title %>
+  <%= card_text do %>
+    <%= _('In order to complete your purchase, you need to authorize it with your card issuer.') %>
+  <% end # card_text %>
+  <%= link_to _('Retry'), request.query_parameters.merge({retry: true}),
+      {class: 'd-block mx-auto col-6 btn btn-lg btn-primary'} %>
+<% end # card_body %>

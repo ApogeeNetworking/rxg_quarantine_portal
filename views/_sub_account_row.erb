@@ -1,0 +1,31 @@
+<div class="d-flex flex-row flex-wrap my-2 border-bottom pb-1">
+  <div class='col-12 col-md-3 d-flex justify-content-start'>
+    <div class="my-auto py-1"><%= sub_account.name %></div>
+  </div>
+  <div class='col-12 col-md-5'>
+    <% g = sub_account.account_group&.name %>
+    <% sub_account_groups = @current_account&.usage_plan&.sub_account_groups || [] %>
+    <% if sub_account_groups.count > 1 %>
+      <%= form_for( sub_account, as: :account, url: { action: :sub_account_update, id: sub_account.id }, html: { name: 'account_form', id: 'account_form' }) do |f| %>
+      <div class="row">
+        <div class="col-8">
+          <%= f.label(:account_group_id) %>
+          <%= f.select(:account_group_id, sub_account_groups.pluck(:name, :id), {include_blank: '- Inherit from parent -'}, {class: 'form-select mx-auto mb-4 w-100'}) %>
+        </div>
+        <div class="col-3 d-flex justify-content-center">
+          <%= f.button(type: "submit", class: "#{portal_login_submit_classes} my-auto") do %>
+            <i class="fas fa-save"></i>
+          <% end %>
+        </div>
+      </div>
+
+
+      <% end %>
+    <% end %>
+  </div>
+  <div class='col-12 col-md-4 d-flex flex-row justify-content-center'>
+    <%= button _("<i class=\"fas fa-edit\"></i> &nbsp; Edit").html_safe, nowrap: true, context: :primary, size: :lg, url: { action: :sub_account_edit, id: sub_account.id }, class: 'my-auto me-2' %>
+    <%= button _("<i class=\"fas fa-trash\"></i> &nbsp; Delete").html_safe, nowrap: true, context: :primary, size: :lg, url: { action: :sub_account_delete, id: sub_account.id }, data: {confirm: 'Are you sure you want to delete this account and all its devices?' }, class: 'my-auto' %>
+  </div>
+</div>
+

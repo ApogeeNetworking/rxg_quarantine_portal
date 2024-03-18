@@ -1,0 +1,101 @@
+<%
+  icon_style ||= :solid
+
+  bottom_button ||= nil
+
+  nav_links = [
+    {
+      action: :index,
+      icon: (@logged_in ? 'tachometer-alt' : 'home'),
+      title: (@logged_in ? _('Dashboard') : _('Home')),
+    },
+  ]
+
+  # Manage Devices
+  nav_links << {
+    action: :manage_devices,
+    icon: 'desktop',
+    title: _('Devices'),
+  } if @current_account_or_token.try(:can_manage_devices?)
+
+  # Profile and Billing
+  if @current_account
+    unless @current_account.pms_room
+      # Profile
+      nav_links << {
+        action: :account_info,
+        icon: 'user',
+        title: _('Profile'),
+      }
+
+      # Billing
+      nav_links << {
+        action: :billing,
+        icon: 'credit-card',
+        title: _('Billing'),
+      }
+    end # unless @current_account.pms_room
+  end # if @current_account
+
+  # Coupon
+  nav_links << {
+    action: :coupon,
+    icon: 'ticket-alt',
+    title: _('Coupon'),
+  } if Coupon.any?
+
+  # Usage
+  nav_links << {
+    action: :usage,
+    icon: 'chart-bar',
+    title: _('Usage'),
+  } if @current_account_or_token
+
+  # Location
+  nav_links << {
+    action: :map,
+    icon: 'street-view',
+    title: _('Location'),
+  } if client_floor
+
+  # Logout and Sign Up
+  if @logged_in
+    nav_links << {
+      action: :login_session_destroy,
+      icon: 'sign-out-alt',
+      title: _('Logout'),
+      method: :delete,
+    } if !@login_session.account || (@login_session.account && @login_session.account.lock_devices == false)
+
+    # Usage Plans Button
+    bottom_button ||= { action: :usage_plan_list, icon: 'shopping-cart', title: _('Upgrade Plan') } unless @usage_plans.empty? || !@current_account_or_token
+  end # if @logged in
+
+  # Sign Up Button
+  bottom_button ||= { action: :sign_up, icon: 'user-plus', title: _('Sign Up') } unless @logged_in
+
+  if bottom_button
+
+    bottom_button_icon = fa_icon(icon: bottom_button[:icon], style: icon_style, fixed: true, class: 'me-3')
+
+    bottom_button_text = bottom_button_icon ? (_('%{icon} %{title}') % { icon: bottom_button_icon, title: bottom_button[:title] }).html_safe : bottom_button[:title]
+  end # if bottom_button
+%>
+<%= nav(class: ['flex-column align-items-start h-100 py-4 text-nowrap']) do %>
+  <% nav_links.each do |link| %>
+    <%
+      link_icon = nil
+      link_icon = fa_icon(style: icon_style, icon: link[:icon].to_s, fixed_width: true, size: :lg, class: 'me-3') if link[:icon]
+      link_title = link[:title].to_s
+      link_text = link_icon ? (_('%{icon} %{title}') % { icon: link_icon, title: link_title }).html_safe : link_title
+    %>
+    <%= nav_link({action: link[:action]}, link_text.html_safe,
+      active: ((params[:action].to_s == link[:action].to_s) || (params[:no_please_wait] == 'true' && params[:action] == 'login_success' && link[:title] == 'Dashboard')),
+      disabled: !!link[:disabled], method: link[:method] || :get, class: 'mb-3')
+    %>
+  <% end # nav_links.each %>
+
+  <% if bottom_button %>
+    <%= button(bottom_button_text, url: {action: bottom_button[:action]}, context: :primary, class: ' w-75 mx-auto') %>
+  <% end # if bottom_button %>
+<% end # nav %>

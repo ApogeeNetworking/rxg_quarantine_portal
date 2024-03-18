@@ -1,0 +1,248 @@
+/* Dialog/graph styling */
+.rxg_portal_dialog {
+  position: relative;
+  margin: 0px 0px 10px 0px;
+  padding: 0px 0px 0px 0px;
+  min-width: 100px;
+  min-height: 30px;
+  width: 100%;
+  color: #000;
+  font-size: 75%;
+  font-family: Arial,sans-serif;
+  text-decoration: none;
+  z-index: 1;
+  border-radius: 0px;
+  box-shadow: none;
+}
+
+.carousel .rxg_portal_dialog {
+  margin-top: 0px;
+  margin-bottom: 10px;
+}
+
+.rxg_portal_dialog table.summary {
+  font-size: 12px;
+}
+
+.portal-graphs-container {
+  padding-bottom: 10px
+}
+
+.portal-graphs-container .rg-transparent-bg {
+  background-color: rgba(245, 245, 245, 0.9) !important;
+}
+
+.portal-graphs-container .graph svg {
+  background: none !important;
+}
+
+.rxg_portal_dialog table, .rxg_portal_dialog td {
+  border: none;
+}
+
+.rxg_portal_dialog svg {
+  max-height: 300px
+}
+
+#dialog_config_button img, #dialog_config_button svg {
+  height: 21px;
+  vertical-align: middle;
+}
+
+.dialog_color_reason {
+  margin-top: 4px;
+  margin-left: 0px;
+  position: absolute;
+  font-size: 14px;
+}
+
+.dialog_color_reason>a {
+  color: #333 !important;
+  -webkit-transition: all 0.3s ease-in-out;
+  -o-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+}
+
+.dialog_color_reason>a:hover {
+  color: #ed3237 !important;
+}
+
+.dialog_color_reason.hidden {
+  display: none;
+}
+
+a.dialog-gear-icon {
+  color: #4d4d4d !important;
+  -webkit-transition: all 0.3s ease-in-out;
+  -o-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+}
+
+a.dialog-gear-icon:hover {
+  color: #ed3237 !important;
+}
+
+table.summarysummary {
+  padding: 0px 0px 5px 5px;
+  width: 100%;
+  text-align: center;
+  color: #555;
+  font-size: 80%;
+}
+
+table.summarysummary img:hover {
+  border-left: 2px solid #D9D9D9;
+}
+
+table.summary img:hover {
+  border-left: 2px solid #D9D9D9;
+}
+
+.rxg_portal_dialog a:hover {
+  color: var(--bs-primary);
+  background-color: transparent;
+}
+
+.rxg_portal_dialog a:link {
+  color: var(--bs-primary);
+  background-color: transparent;
+}
+
+.rxg_portal_dialog a:visited {
+  color: var(--bs-primary);
+  background-color: transparent;
+}
+
+.rxg_portal_dialog a:active {
+  color: var(--bs-primary);
+  background-color: transparent;
+}
+
+a.global_search_link {
+  color: var(--bs-primary) !important;
+  text-decoration: underline;
+}
+
+a.global_search_link:hover {
+  color: var(--bs-secondary) !important;
+  text-decoration: none !important;
+  margin-left: 0px !important;
+}
+
+table.summary {
+  table-layout: fixed;
+}
+
+table.summary td {
+  text-overflow: ellipsis;
+  display: table-cell;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.no-top-margin div.rxg_portal_dialog {
+  margin-top: 0px;
+}
+
+.no-top-margin + div {
+  margin-top: -10px;
+}
+
+.no-left-gutter {
+  /* the left side gutter */
+  padding-left:0px !important;
+}
+
+.no-right-gutter {
+  /* the right side gutter */
+  padding-right:0px !important;
+}
+
+.no-padding {
+  padding: 0;
+}
+
+.small-gutter > [class*='col-'] {
+  /* middle gutters */
+  padding-right:5px;
+  padding-left: 5px;
+}
+
+.center-align {
+  text-align: center;
+}
+
+.left-align {
+  text-align: left;
+}
+
+.right-align {
+  text-align: right;
+}
+
+.rxg_portal_dialog .content,
+.rxg_portal_dialog .t,
+.rxg_portal_dialog .b,
+.rxg_portal_dialog .b div {
+}
+
+.rxg_portal_dialog.yellow .content,
+.rxg_portal_dialog.yellow .t,
+.rxg_portal_dialog.yellow .b,
+.rxg_portal_dialog.yellow .b div {
+  background-color: var(--yellow);
+}
+
+.rxg_portal_dialog.red .content,
+.rxg_portal_dialog.red .t,
+.rxg_portal_dialog.red .b,
+.rxg_portal_dialog.red .b div {
+  background-color: var(--red);
+}
+
+/*
+.rxg_portal_dialog.red .content {
+background-color: inherit;
+box-shadow: inset 0px 0px 62px 10px rgba(240,128,128,1);
+}
+.rxg_portal_dialog.yellow .content {
+background-color: inherit;
+box-shadow: inset 0px 0px 62px 10px rgba(255,255,102,1);
+}
+*/
+.rxg_portal_dialog .content {
+  position: relative;
+  overflow: hidden;
+  padding: 5px 5px 5px 5px;
+  border-radius: none;
+}
+
+.rxg_portal_dialog .hd,
+.rxg_portal_dialog .bd,
+.rxg_portal_dialog .ft {
+  position: relative;
+}
+
+.rxg_portal_dialog .wrapper {
+  /* extra content protector - preventing vertical overflow (past background) */
+  position:static;
+  max-height: 1000px;
+  overflow: auto; /* note that overflow:auto causes a rather annoying redraw "lag" in Firefox 2, and may degrade performance. Might be worth trying without if you aren't worried about height/overflow issues. */
+}
+
+.rxg_portal_dialog h1,
+.rxg_portal_dialog p {
+  margin: 0px; /* margins will blow out backgrounds, leaving whitespace. */
+  padding:0.5em 0px 0.5em 0px;
+}
+
+.progress-bar-hidden {
+  box-shadow: none;
+  background: none;
+}
+
+.progress-bar-hidden .progress-bar {
+  background: none;
+  color: #555;
+}
+/* end portal specific dialog/graph styling */

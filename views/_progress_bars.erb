@@ -1,0 +1,27 @@
+<% if bars.empty? %>
+  <%= table_row do %>
+    <% 2.times do %>
+      <%= table_data do %>
+        &nbsp;–&nbsp;–&nbsp;
+      <% end # table_data %>
+    <% end # 2.times %>
+  <% end # table_row %>
+<% else %>
+  <% bars.each do |bar| %>
+    <% context = bar[:bar_class].to_s.to_sym %>
+    <%= table_row do %>
+      <% bar[:columns].each do |td| %>
+        <%= table_data do %>
+          <%= td %>
+        <% end # table_data %>
+      <% end %>
+      <%= table_data do %>
+        <%= progress do %>
+          <%= progress_bar(context: context,  value: bar[:value], width: bar[:percent]) do %>
+            <%= bar[:value] %>
+          <% end # progress_bar %>
+        <% end # progress %>
+      <% end # table_data %>
+    <% end # table_row %>
+  <% end # bars.each %>
+<% end # if bars.empty? %>

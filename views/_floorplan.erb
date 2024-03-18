@@ -1,0 +1,99 @@
+<% meta = floor.floorplan_metadata %>
+<% if floor = client_floor %>
+  <% scale = floor.floorplan_scale %>
+  <% scaled_width = meta[:width] * scale %>
+  <% scaled_height = meta[:height] * scale %>
+  <div>
+    <!-- container-fluid should not exceed image size as regions are relative to container-fluid -->
+    <div class="floorplan-container" style="max-width: <%= meta[:width] %>px; max-height: <%= meta[:height] %>px">
+      <%= image_tag floor.floorplan.url %>
+      <% if display_regions %>
+        <% floor.children.each do |region| %>
+          <% left_p  = ( region.x1 / (meta[:width] / floor.floorplan_scale) ) * 100.0 %>
+          <% right_p = ((region.x2 * scale) / meta[:width]) * 100.0 %>
+          <% width_p = right_p - left_p %>
+          <% bottom_p = ((region.y1 * scale) / meta[:height]) * 100.0 %>
+          <% top_p    = 100 - (((region.y2 * scale) / meta[:height]) * 100.0) %>
+          <% height_p = 100 - bottom_p - top_p %>
+          <%# Override the .region CSS class with additional styles if desired. %>
+          <%= content_tag('div', {class: 'region', style: "#{"background-color: \##{region.bgcolor};" if region.bgcolor} left: #{left_p}%; width: #{width_p}%; height: #{height_p}%; top: #{top_p}%;" }) do %>
+            <div class="region-name-container-fluid">
+              <div class="region-name">
+                <%= region.name  %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <script>
+    let queryLoopTimeout = null
+
+    function mapMarker(x, y, color, classes= '', title = null) {
+      return `<i rel="tooltip" class="fa-solid fa-map-marker-alt fa-3x mapmarker ${classes}" style="top: ${y}%; left: ${x}%; color: #${color};" ${title ? `title="${title}" data-bs-html="true" data-bs-toggle="tooltip" data-bs-placement="top"` : ''}></i>`
+    }
+
+    function initLocation(current, last) {
+      let loc = null;
+      let append = true;
+      if (current) {
+        const {
+          p_xoffset = 0,
+          p_yoffset = 0,
+          floor_id = 0
+        } = current
+        // Reloads the page if the customer has changed floorplan in current_location
+        if (<%= client_floor.id %> != floor_id) {
+          append = false;
+          window.location.reload();
+        }
+        title = '<%= _('<strong>You Are Here</strong>').html_safe %>'
+        loc = mapMarker(p_xoffset, p_yoffset, 'FF3366', 'current-location location-marker', title)
+      } else if(last) {
+        const {
+          p_xoffset = 0,
+          p_yoffset = 0,
+          floor_id = 0
+        } = last
+        // Reloads the page if the customer has changed floorplan in last_known_location
+        if (<%= client_floor.id %> != floor_id) {
+          append = false;
+          window.location.reload();
+        }
+        title = '<%= _('<strong>Last Known Location</strong>').html_safe %>'
+        loc = mapMarker(p_xoffset, p_yoffset, 'CC0033AA', 'last-location location-marker', title)
+      }
+      if (loc && append) {
+        $('.floorplan-container .mapmarker.location-marker').remove();
+        $('.tooltip.fade.show.bs-tooltip-top').remove();
+        $('.floorplan-container').append(loc)
+      }
+    }
+
+    function fetchData() {
+      const action = 'location_data'
+      return fetch(action).then((response) => {
+        if (response.ok) {
+          return response.json()
+        }
+        return Promise.reject(response)
+      })
+    }
+
+    function initMap() {
+      return fetchData().then((result) => {
+        const {
+          current_location,
+          last_known_location,
+        } = result
+        const nextRefresh = 5000 // refresh interval, default 5s
+        initLocation(current_location, last_known_location)
+        queryLoopTimeout = setTimeout(initMap, nextRefresh)
+      })
+    }
+
+    $(initMap)
+  </script>
+<% end %>

@@ -1,0 +1,13 @@
+<%
+  title ||= _('Log in with Sponsor')
+  hide_title ||= false
+%>
+<%= bootstrap_form_tag(url: @and_agency_url, method: :get) do |f| %>
+  <%= f.hidden_field :data, value: @and_agency_data %>
+  <%= f.hidden_field :return_url, value: @and_agency_return_url %>
+  <fieldset class="d-flex flex-column h-100">
+    <legend class="<%= 'visually-hidden' if hide_title %>"><%= title %></legend>
+    <%= render_portal_partial('terms_checkbox', locals: { f: f }) %>
+    <%= f.submit(_('Continue'), class: "mt-auto #{portal_login_submit_classes}", data: { disable_with: _('Please wait...') }) %>
+  </fieldset>
+<% end %>

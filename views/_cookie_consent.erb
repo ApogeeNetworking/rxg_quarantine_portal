@@ -1,0 +1,3 @@
+<%= alert(context: :info, dismissible: true, fade: true, class: 'rounded-0 mb-0') do %>
+  <%= (_('This portal requires cookies in order to function properly.  By using this portal, you agree to our use of cookies. &nbsp;&nbsp; %{link}') % { link: link_to(_('Learn More'), {action: :cookie_policy}, {class: 'alert-link'}) }).html_safe %>
+<% end %>

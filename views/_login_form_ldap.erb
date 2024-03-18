@@ -1,0 +1,14 @@
+<%
+  title ||= _('LDAP Login')
+  hide_title ||= false
+%>
+<%= bootstrap_form_tag(url: {action: :ldap_login}, id: 'ldap_login') do |f| %>
+  <fieldset class="d-flex flex-column h-100">
+    <legend class="<%= 'visually-hidden' if hide_title %>"><%= title %></legend>
+    <%= f.text_field(:login, {value: params[:login], title: _('Login'), label: _('Login'), label_as_placeholder: true, class: portal_form_input_classes, autocorrect: :off, autocapitalize: :off}) %>
+    <%= f.password_field(:password, {title: _('Password'), label: _('Password'), label_as_placeholder: true, class: portal_form_input_classes}) %>
+    <%= f.select(:"ldap_domain[id]", options_for_select(
+      (@captive_portal.try(:ldap_domains) || LdapDomain.all).collect { |ld| [ ld.name, ld.id ] }), {label: _('LDAP Domain')}, {class: portal_form_input_classes}) %>
+    <%= f.submit(_('Sign In'), class: "mt-auto #{portal_login_submit_classes}", data: { disable_with: _('Please wait...') }) %>
+  </fieldset>
+<% end %>

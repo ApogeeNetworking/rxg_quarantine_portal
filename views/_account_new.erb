@@ -1,0 +1,14 @@
+<%= card_body do %>
+  <%= card_title do %>
+    <%= _('Sign Up') %>
+  <% end # card_title %>
+  <%= bootstrap_form_for( @account, as: :account, url: { action: :account_create }, html: { name: 'account_form', id: 'account_form' }) do |f| %>
+
+    <%= render_portal_partial('form_errors', locals: { f: f }) %>
+
+    <%= render_portal_partial('account_form', locals: { f: f }) %>
+    <%= render_portal_partial('terms_checkbox') %>
+
+    <%= f.submit(_('Sign up'), class: "mt-auto #{portal_login_submit_classes}", data: { disable_with: _('Please wait...') }) %>
+  <% end # bootstrap_form_for %>
+<% end # card_body %>

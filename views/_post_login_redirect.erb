@@ -1,0 +1,17 @@
+<script type="text/javascript">
+
+  please_wait_complete = true // Stop refreshing login_session_status action
+
+  <% if !@login_session %>
+    window.location = "<%= url_for(action: :index) %>"
+  <% elsif @landing_portal && @landing_portal.post_login_redirect? && @login_session && @login_session.online? %>
+    <% if @landing_portal.post_login_redirect_original_url? && session[:desired_url] %>
+      window.location = "<%= session[:desired_url] %>"
+    <% else %>
+      window.location = "<%= @landing_portal.post_login_redirect_url.html_safe %>"
+    <% end # if @landing_portal.post_login_redirect_original_url? && session[:desired_url] %>
+  <% else %>
+    window.location = "<%= url_for(action: :login_success, no_please_wait: true) %>"
+  <% end # if @landing_portal && @landing_portal.post_login_redirect? && login_session && login_session.online? %>
+
+</script>

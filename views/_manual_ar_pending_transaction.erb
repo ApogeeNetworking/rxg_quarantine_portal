@@ -1,0 +1,63 @@
+<%
+    info_title = _("A pending transaction is one that you have requested, but which has not yet been approved by an administrator.")
+%>
+
+<div class="my-3 row">
+  <div class="col-12 col-md-3">
+    <div>
+      <h6 class="d-flex justify-content-between">
+        <span><%= _("Pending Transaction")%></span> 
+        <a href="#pending-ar-info-collapse" data-bs-target="#pending-ar-info-collapse" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="pending-ar-info-collapse">
+          <i class="fa fa-info-circle"></i>
+        </a>
+      </h6>
+      <div class="collapse" id="pending-ar-info-collapse">
+        <p>
+          <%= info_title %>
+        </p>
+      </div>
+    </div>
+    
+    <div class="d-flex justify-content-between">
+      <span>
+        <%= _("Plan: ") %>
+      </span>
+      <span>
+        <%= transaction.usage_plan.name %>
+      </span>
+    </div>
+    <div class="d-flex justify-content-between">
+      <span>
+        <%= _("Cost: ") %>
+      </span>
+      <span>
+        <%= number_to_currency(transaction.debit, unit: transaction.usage_plan.currency_unit) %>
+      </span>
+    </div>
+
+    <% if transaction.approval_price_from_credit != 0 %>
+      <div class="d-flex justify-content-between">
+        <span>
+          <%= _("From Credit: ") %>
+        </span>
+        <span>
+          <%= transaction.approval_price_from_credit_in_currency %>
+        </span>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span>
+          <%= _("Cost After Credit: ") %>
+        </span>
+        <span>
+          <%= transaction.approval_price_in_currency %>
+        </span>
+      </div>
+    <% end %>
+
+    <%= button_to "Cancel", 
+      {action: :cancel_pending_transaction, pending_transaction_id: transaction.id}, 
+      {class: "btn btn-danger w-100"} 
+    %>
+  </div>
+</div>
+

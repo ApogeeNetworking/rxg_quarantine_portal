@@ -1,0 +1,51 @@
+<%
+  use_react_location = true
+%>
+
+<% if use_react_location %>
+  <% if client_floor && @current_account_or_token %>
+    <% props = {
+      infrastructure_area_id: client_floor.id,
+      infrastructure_area_name: client_floor.name,
+      client_location: client_location&.to_json,
+      poi_categories: client_floor.poi_categories.to_json,
+      #account_devices: DeviceLocation.latest_locations(client_floor).where(account: @current_account_or_token).to_json
+      account_devices: @current_account_or_token.devices.select {|device| DeviceLocation.where(mac: device.mac).order(timestamp: :desc).limit(1).first&.infrastructure_area_id == client_floor.id}.to_json
+    }
+
+    if client_location&.access_point
+      props['client_access_point'] = client_location.access_point.to_json
+    end
+
+    %>
+
+    <h1 class="p-2">Location Map</h1>
+
+    <%= card(class: portal_card_classes + " mb-4") do %>
+      <%= card_body do %>
+        <%= card_title do %>
+          <%= client_floor.parent.name %>
+        <% end %>
+        <%= render_portal_partial "client_floor_sub_title" %>
+      <% end %>
+    <% end %>
+
+    <%= card(class: portal_card_classes) do %>
+      <%= card_body do %>
+        <% if client_floor && client_location %>
+          <%= react_component("Location", props) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="text-white">
+      <%= _("No Account Or Location Missing") %>
+    </div>
+  <% end %>
+<% else %>
+  <%= render_portal_partial 'floorplan', locals: {
+      floor: client_floor,
+      # set display_regions to true to show regions and names on the floorplan
+      display_regions: true
+    } %>
+<% end %>

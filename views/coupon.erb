@@ -1,0 +1,18 @@
+<%= card(class: portal_card_classes) do %>
+  <%= card_body do %>
+    <%= card_title do %>
+      <%= _('Redeem Coupon') %>
+    <% end # card_title %>
+    <% if @current_account %>
+      <%= render_portal_partial 'redeem_coupon_form' %>
+    <% elsif @logged_in %>
+      <%= card_text(class: "text-center") do %>
+        <%= _('This login type does not support coupons.') %>
+      <% end # card_text %>
+    <% else %>
+      <%= card_text(class: "text-center") do %>
+        <%= (_('Please %{link} or login before redeeming a coupon.') % { link: link_to('sign up', action: :quick_purchase) }).html_safe %>
+      <% end # card_text %>
+    <% end # if @current_account %>
+  <% end # card_body %>
+<% end # card %>

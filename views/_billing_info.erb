@@ -1,0 +1,88 @@
+<%
+  bars = account_usage_summary_dialog_data(Hash.new)[:bars]
+  titles = [nil, _('Expiration')]
+  gauges = generate_summary_gauges_from_bars(bars, titles)
+
+  last_transaction = @current_account_or_token.merchant_transactions.order(:created_at).last
+
+  has_billing = @current_account.bill_at && @current_account.usage_plan && !@current_account.usage_plan.price_free?
+
+  recurring_billing_disabled = @current_account && @current_account.usage_plan.try(:recurring_method) != "none" && @current_account.bill_at.nil?
+%>
+<%= card(class: portal_card_classes) do %>
+  <%= card_body do %>
+    <%= card_title do %>
+      <%= _('Account Billing') %>
+    <% end # card_title %>
+    <% if last_transaction %>
+      <% unless last_transaction.success %>
+        <%= alert(context: :danger, dismissible: true) do %>
+          <%= (_('%{icon} Your payment of %{amount} was declined.') % { amount: last_transaction.price_display, icon: fa_icon(style: :solid, icon: 'exclamation-triangle', size: :lg, fixed_width: true, class: 'me-3') }).html_safe %>
+          <%= alert_link({ action: :payment_method_edit }, _('Please update your payment method.')) %>
+        <% end # alert %>
+      <% end # unless last_transaction && last_transaction_success %>
+    <% end # if last_transaction %>
+    <div class="row">
+      <% if has_billing %>
+        <div class="col-12 col-md-6 col-lg-4">
+          <% if @current_account.bill_at > Time.now %>
+            <div class="row">
+              <div class='col-12'>
+                <h4><%= (_('Active until %{date}') % { date: l(@current_account.bill_at.to_date, format: :short) }) %></h4>
+                <%= card_text do %>
+                  <%= (_('Your stored %{link} will be automatically charged on %{date}.') % { link: link_to(_('payment method'), { action: :payment_method_edit }), date: @current_account.bill_at.strftime("%A, %b %d %Y") }).html_safe %>
+                <% end # card_text %>
+              </div>
+            </div>
+          <% elsif @current_account.bill_at < Time.now %>
+            <div class="row">
+              <div class='col-12'>
+                <h4><%= (_('Expired on %{date}') % { date: l(@current_account.bill_at.to_date, format: :short) }) %></h4>
+                <%= card_text do %>
+                  <%= (_('Your account failed to automatically recharge on %{date}. Please review your %{link} to ensure continued access.') % { link: link_to(_('payment method'), { action: :payment_method_edit }), date: l(@current_account.bill_at) }).html_safe %>
+                <% end # card_text %>
+              </div>
+            </div>
+          <% end # @current_account.bill_at > Time.now %>
+        </div>
+      <% end # if has_billing %>
+        <% if subscription = @current_account.last_subscription_for_current_usage_plan %>
+          <div class="row">
+            <div class='col-12'>
+              <h4><%= (_('%{price} %{period}') % { price: subscription.price_display, period: subscription.recurring_method }) %></h4>
+              <%= card_text do %>
+                <%= subscription.usage_plan.name %>
+              <% end # card_text %>
+            </div>
+          </div>
+        <% end # if @subscription %>
+        <%= render_portal_partial('prorated_credit') %>
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="row mb-3 g-3 justify-content-center align-items-center">
+            <%= render_portal_partial('session_info_gauge', locals: {gauge: gauges[1]}) %>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="row gy-3 gx-5 justify-content-sm-between justify-content-lg-end">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-5 col-xl-4 col-xxl-3">
+              <% if recurring_billing_disabled %>
+               <%= button(class: 'w-100', outline: true, nowrap: true, size: :lg, context: :secondary, url: { action: :usage_plan_list }) do %>
+                  <%= _('Recurring Billing Disabled') %>
+               <% end # button %>
+              <% else %>
+                <%= button(class: 'w-100', outline: true, nowrap: true, size: :lg, context: :danger, url: {action: :cancel_recurring_payments}, data: {disable_with: _('Please wait'), confirm: _('This will disable recurring payments, and you may continue to use the network until your usage has expired.  Are you sure you wish to continue?')}) do %>
+                  <%= _('Cancel Subscription') %>
+                <% end # button %>
+              <% end # if recurring_billing_disabled %>
+            </div>
+            <div class="col-12 col-sm-4 col-lg-3 col-xxl-2">
+              <%= button(class: 'w-100', context: :primary, size: :lg, url: {action: :usage_plan_list}, data: {disable_with: _('Please wait')}) do %>
+                <%= _('Upgrade') %>
+              <% end # button %>
+            </div>
+          </div>
+        </div>
+    </div>
+        <%= render_portal_partial('manual_ar_pending_transaction', locals: { transaction: @current_account.transaction_pending_admin_approval }) if @current_account.transaction_pending_admin_approval %>
+  <% end # card_body %>
+<% end # card %>

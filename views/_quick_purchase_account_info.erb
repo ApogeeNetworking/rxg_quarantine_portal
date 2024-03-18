@@ -1,0 +1,57 @@
+<%
+  property ||= nil
+  show_address =  @paid_plans.any?
+%>
+<%= card(class: "h-100 #{portal_card_classes}") do %>
+  <%= card_body do %>
+    <fieldset>
+      <legend><%= _('Account Info') %></legend>
+      <%= f.fields_for @account do |f| %>
+        <% if property.present? %>
+          <%= f.hidden_field :address1, value: this_property.address %>
+          <%= f.hidden_field :region, value: this_property.region %>
+          <%= f.hidden_field :city, value: this_property.city %>
+          <%= f.hidden_field :zip, value: this_property.zip %>
+
+          <% if this_property.pms_rooms.any? %>
+            <%= f.select_tag :address2, options_for_select(this_property.pms_rooms.map { |pms_room| [pms_room.room, pms_room.room, { 'data-id' => pms_room.id }] }), {include_blank: _('Select your unit number'),  class: portal_form_select_classes} %>
+            <%= f.hidden_field :pms_room_id  %>
+          <% end # this_property.pms_rooms.any? %>
+        <% end # if property.present? %>
+
+        <%= f.email_field(:email, {value: params[:email] || params.dig(:account, :email), label: _('Email address'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 3, maxlength: 254, autocomplete: 'email', autocorrect: :off, autocapitalize: :off, spellcheck: false}) %>
+
+        <%= f.text_field(:login, {value: params[:login] || params.dig(:account, :login), label: _('Username'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 2, maxlength: 254, autocomplete: 'username', autocorrect: :off, autocapitalize: :off, spellcheck: false}) %>
+
+        <%= f.password_field(:password, {value: params[:password] || params.dig(:account, :password), label: _('Password'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 2, maxlength: 40, autocomplete: 'new-password', autocorrect: :off, autocapitalize: :off, spellcheck: false}) %>
+
+        <%= f.password_field(:password_confirmation, {value: params[:password_confirmation] || params.dig(:account, :password_confirmation), label: _('Password Confirmation'), label_as_placeholder: true, class: portal_form_input_classes, required: true, minlength: 2, maxlength: 40, autocomplete: 'new-password', autocorrect: :off, autocapitalize: :off, spellcheck: false}) %>
+
+        <% if VlanTagAssignment.find_by(mac: client_mac).try(:supports_wlan_dpsk?) || !client_mac %>
+          <%= f.text_field(:pre_shared_key, {value: params[:pre_shared_key], label: _('Wireless Pre-Shared Key'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 8, maxlength: 63, pattern: '\A\p[\x00-\x7F]+\z', autocomplete: :off, autocorrect: :off, autocapitalize: :off, spellcheck: false}) %>
+        <% end # if if VlanTagAssignment.find_by(mac: client_mac).try(:supports_wlan_dpsk?) %>
+      <% end # f.fields_for @account %>
+    </fieldset>
+    <% if show_address %>
+      <%= f.fields_for @payment_method do |f| %>
+        <% if @simple_form %>
+          <!-- fields that rXg requires but we don't want to require from customer -->
+          <%= f.hidden_field :address1, value: "Quick Purchase" %>
+          <%= f.hidden_field :city,     value: "Quick Purchase" %>
+          <%= f.hidden_field :state,    value: "Quick Purchase" %>
+          <%= f.hidden_field :zip,      value: 00000            %>
+        <% else %>
+          <fieldset class=".address-form">
+            <legend><%= _('Address') %></legend>
+            <%= f.form_group(class: 'row') do %>
+              <%= f.text_field(:address1, {value: params[:address1] || params.dig(:payment_method, :address1), label: _('Street Address'), label_as_placeholder: true, class: portal_form_input_classes, autocomplete: 'address-line1', autocorrect: :off, autocapitalize: :off}) %>
+              <%= f.text_field(:city, {value: params[:city] || params.dig(:payment_method, :city), label: _('City'), label_as_placeholder: true, class: portal_form_input_classes, autocomplete: 'address-level2', autocorrect: :off, autocapitalize: :off, wrapper: {class: 'col-12 col-md-6 col-lg-12'}}) %>
+              <%= f.text_field(:state, {value: params[:state] || params.dig(:payment_method, :state), label: _('State'), label_as_placeholder: true, class: portal_form_input_classes, wrapper: {class: 'col-12 col-sm-6 col-md-3 col-lg-6'}, autocomplete: 'address-level1', autocorrect: :off, autocapitalize: :off}) %>
+              <%= f.text_field(:zip, {value: params[:zip] || params.dig(:payment_method, :zip), label: _('Zip Code'), label_as_placeholder: true, class: portal_form_input_classes, wrapper: {class: 'col-12 col-sm-6 col-md-3 col-lg-6'}, autocomplete: 'postal-code', autocorrect: :off, autocapitalize: :off}) %>
+            <% end # f.form_group %>
+          </fieldset>
+        <% end # if @simple_form %>
+      <% end # f.fields_for @payment_method %>
+    <% end # if show_address %>
+  <% end # card_body %>
+<% end # card %>

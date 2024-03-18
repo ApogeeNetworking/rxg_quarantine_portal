@@ -1,0 +1,23 @@
+<%= bootstrap_form_tag(url: {action: :complete_account_validation}) do |f| %>
+  <% if @current_account_or_token.phone_validated? %>
+    <p><%= _('Your phone number has been validated successfully.  Please validate your Email address to continue.') %></p>
+  <% end %>
+  <% if @current_account_or_token.email_validated? %>
+    <p><%= _('Your Email address has been validated successfully.  Please validate your phone number to continue.') %></p>
+  <% end %>
+  <p>
+    <%= (_('Enter the validation code to activate your account.  If you did not receive the code, %{link} to resend.') % { link: link_to('click here', {action: :resend_validation_code, desired_usage_plan_id: @usage_plan.try(:id)}) }).html_safe %>
+  </p>
+  <%= f.hidden_field(:desired_usage_plan_id, value: @usage_plan.try(:id)) %>
+  <%= f.text_field(:code, {value: nil, class: portal_form_input_classes, label: _('Code'), label_as_placeholder: true, autocomplete: 'one-time-code', autofocus: true})  %>
+  <%= f.submit(_('Proceed'), class: portal_submit_classes, data: {disable_with: _('Please wait...')} ) %>
+<% end # bootstrap_form_tag %>
+<% if @current_account_or_token.phone_validation_pending?(@usage_plan) %>
+  <%= bootstrap_form_for(@account, as: :current_account_or_token,
+        url: { action: :update_phone_number }) do |f| %>
+    <%= f.hidden_field(:desired_usage_plan_id, value: @usage_plan.try(:id)) %>
+    <p><%= _('If you need to update your mobile number, you may do so below:') %></p>
+    <%= f.telephone_field(:phone, {class: portal_form_input_classes, label: _('Mobile'), label_as_placeholder: true, autocomplete: 'tel'}) %>
+    <%= f.submit(_('Update'), class: portal_submit_classes, data: {disable_with: _('Please wait...')}) %>
+  <% end # bootstrap_form_for %>
+<% end # if @current_account_or_token.phone_validation_pending?(@usage_plan) %>

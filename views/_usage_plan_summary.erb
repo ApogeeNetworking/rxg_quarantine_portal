@@ -1,0 +1,98 @@
+<%
+  f ||= nil
+
+  subscription = begin
+    # use the @subscription instance if it pertains to this usage plan.  don't
+    # assume the same addons will exist for other plans, so use a new Subscription
+    # in that case
+    if @subscription.usage_plan_id == usage_plan.id
+      @subscription
+    else
+      Subscription.assemble(usage_plan)
+    end # if @subscription.usage_plan_id == usage_plan.id
+  end # subscription = begin
+
+  if @current_account_or_token
+    if subscription.usage_plan.manual_ar?
+      subscription.reset_price_for_credit!(@current_account_or_token.credit)
+    else
+      subscription.reset_price_for_credit!(@current_account_or_token.prorated_credit)
+    end
+  end
+
+  descriptions = [
+    usage_plan.description,
+    usage_plan.time_plan.try(:description),
+    usage_plan.quota_plan.try(:description),
+    usage_plan.plan_addons.of_component_type(:misc).collect { |plan_addon| plan_addon.description },
+  ].flatten.compact
+
+  summary_items = []
+
+  # Bandwidth
+  if (policy = usage_plan.account_group.try(:policy))
+    policy.bandwidth_queues.each do |queue|
+      if queue.net_apps.empty? && queue.wan_targets.empty?
+        summary_items << _('Speed: %{bandwidth}') % { bandwidth: queue.bandwidth }
+        break
+      end # if queue.net_apps.empty? && queue.wan_targets.empty?
+    end # policy.bandwidth_queues.each
+  end # if (policy = usage_plan.account_group.try(:policy))
+
+  # Max Devices
+  max = usage_plan.included_max_devices.to_i
+  if max > 0
+    devices_text = [(n_('Plan includes support for up to <b>1</b> device.', 'Plan includes support for up to <b>%{max}</b> devices.', max) % { max: max }) ]
+
+    if usage_plan.plan_addons.optional.of_component_type(:max_devices).exists?
+      devices_text <<  _('Support for more devices may be selected from the Optional Addons section below.')
+    end # usage_plan.plan_addons.optional.of_component_type(:max_devices
+    summary_items << (_('Devices: %{text}') % { text: devices_text.join(' ') })
+  end # max > 0
+
+  # Usage Expiration
+  expiration_text = ''
+  if usage_plan.unlimited_usage_lifetime?
+   expiration_text = _('usage never expires')
+  elsif usage_plan.no_usage_lifetime?
+    expiration_text = _('maintain existing usage expiration')
+  elsif usage_plan.absolute_usage_lifetime
+    expiration_text = l(usage_plan.absolute_usage_lifetime)
+  elsif usage_plan.usage_lifetime_time
+    expiration_text =  _('%{time} after payment') % { time: pluralize(usage_plan.usage_lifetime_time, usage_plan.usage_lifetime_time_unit.singularize) }
+  end # usage_plan.unlimited_usage_lifetime?
+
+  summary_items << (_('Expires: %{text}') % { text: expiration_text }) unless expiration_text.blank?
+
+  # Recurring Payment
+  summary_items << (_('Payment: Charged once immediately and billed %{method} to selected method of payment.') % { method: usage_plan.recurring_method } ) if usage_plan.is_recurring? && !usage_plan.price_free?
+
+  # Validation Required
+  summary_items << (_('Validation: Requires account validation by %{method}.') % { method: UsagePlan::VALIDATION_METHODS.inverse[usage_plan.validation_method] }) if usage_plan.requires_account_validation?
+
+  # Credit
+  summary_items << (_('Existing Credit: <span class="credit-price-element price_display" data-credit="%{credit}">- %{currency}%{credit}</span>') % { credit: subscription.credit, currency: subscription.currency_unit} ).html_safe if subscription.price_was_adjusted_for_credit?
+%>
+<div class="col px-2 pb-2">
+  <%= card(class: "h-100 #{portal_card_classes}") do %>
+    <%= card_body(class: 'd-flex flex-column justify-content-between') do %>
+      <div>
+        <hgroup class="mb-4">
+        <%= card_title(class: 'h2 text-primary text-center') do %>
+          <%= usage_plan.name %>
+        <% end %>
+        <%= card_subtitle(class: 'text-center') do %>
+          <span class="h1"><%= usage_plan.price_display %></span> <%= "<small>/ #{usage_plan.recurring_method}</small>".html_safe unless (usage_plan.recurring_method == 'none' || usage_plan.price_display == 'free') %>
+        <% end %>
+        </hgroup>
+        <hr class="mx-5 mb-3">
+        <% unless usage_plan.description.blank? %>
+          <%= card_text(tag: :section, class: 'px-5 my-2') do %>
+            <%= usage_plan.description.html_safe %>
+          <% end %>
+        <% end %>
+      </div>
+      <%= f.button(_('Select'), type: :submit, name: 'usage_plan[id]', value: usage_plan.id, class: portal_login_submit_classes, data: { disable_with: _('Please wait...') }) if f %>
+    <% end %>
+  <% end %>
+</div>

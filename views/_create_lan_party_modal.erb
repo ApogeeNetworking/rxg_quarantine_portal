@@ -1,0 +1,18 @@
+<%=
+  modal(id: "create_lan_party_modal", size: :xl, aria_labelled_by: "create-lan-party-title", content: {class: ["#{'bg-dark' if @dark_mode}"]}) do
+%>
+  <%= modal_header(close: 'light') do %>
+    <%= modal_title(id: "create-lan-party-title") do %>
+      <%= _('Create a LAN Party') %>
+    <% end # modal_title %>
+  <% end #modal_header %>
+  <%= modal_body do %>
+    <p>
+      <%= _('<strong>WARNING:</strong> By inviting other users to join your network, you are allowing another person direct access to your devices. Up-to-date  Anti-virus and firewalls are recommended to protect your devices. Only invite users you trust to join your LAN Party.').html_safe %>
+    </p>
+    <%= render_portal_partial 'lan_party_form', locals: {lan_party: @lan_party} %>
+  <% end # modal_body %>
+  <%= modal_footer do %>
+    <%= modal_footer_close_button(_('Cancel')) %>
+  <% end # modal_footer %>
+<% end # modal %>

@@ -1,0 +1,17 @@
+<%= card_body do %>
+  <%= card_title(class: 'text-center') do %>
+    <%= _('Terms of Service') %>
+  <% end # card_title %>
+  <%= card_text(class: 'text-center') do %>
+    <%= _('Before continuing, you must agree to the Terms of Service for this network.') %>
+  <% end # card_text %>
+  <%= render_portal_partial 'tos' %>
+  <%= bootstrap_form_tag(url: {action: :tos_submit}) do |f| %>
+    <%= f.form_group(class: 'text-center') do %>
+      <div class="d-inline-flex flex-column py-3">
+        <%= f.check_box(:tos, { label: _('I agree to the Terms of Service'), class: "mb-4" }, 'yes', 'no') %>
+        <%= f.submit(_('Continue'), class: portal_submit_classes, data: { disable_with: _('Please wait...') }) %>
+      </div>
+    <% end # f.form_group %>
+  <% end # bootstrap_form_tag %>
+<% end # card_body %>

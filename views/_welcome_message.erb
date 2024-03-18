@@ -1,0 +1,102 @@
+<%
+  dynamic ||= false
+  personalized = false
+  default ||= _('Welcome')
+  greeting_portal = _('Welcome to %{name}')
+  welcome_greeting = ''
+  if @login_session
+    if @current_account
+      if @current_account.full_name.blank?
+        options = { name: @login_session.login.capitalize }
+      else
+        options = { name: @current_account.full_name }
+      end # if @current_account.full_name.blank?
+      greeting_generic = _('Welcome, %{name}')
+      greeting_morning = _('Good Morning, %{name}')
+      greeting_afternoon = _('Good Afternoon, %{name}')
+      greeting_evening = _('Good Evening, %{name}')
+      welcome_text = (greeting_generic % options)
+      morning_text = (greeting_morning % options)
+      afternoon_text = (greeting_afternoon % options)
+      evening_text = (greeting_evening % options)
+      welcome_greeting = welcome_text
+    else
+      welcome_greeting = default
+    end # if @current_account_or_token
+  elsif @custom_portal
+    options = { name: @custom_portal.name }
+    welcome_greeting = (greeting_portal % options)
+    greeting_generic = welcome_greeting
+    greeting_morning = _('Good Morning')
+    greeting_afternoon = _('Good Afternoon')
+    greeting_evening = _('Good Evening')
+    welcome_text = greeting_generic
+    morning_text = greeting_morning
+    afternoon_text = greeting_afternoon
+    evening_text = greeting_evening
+  else
+     welcome_greeting = default
+     greeting_generic = welcome_greeting
+     greeting_morning = _('Good Morning')
+     greeting_afternoon = _('Good Afternoon')
+     greeting_evening = _('Good Evening')
+     welcome_text = greeting_generic
+     morning_text = greeting_morning
+     afternoon_text = greeting_afternoon
+     evening_text = greeting_evening
+  end # if @login_session
+%>
+<div class="d-flex flex-md-row flex-wrap justify-content-md-between">
+  <h2 class="welcome col-12 col-md-6 mx-auto d-flex <%= (@login_session && session[:no_please_wait]) ? 'justify-content-start' : 'justify-content-center' %>" data-dynamic="<%= dynamic %>">
+    <%= welcome_greeting %>
+  </h2>
+  <% if @logged_in && session[:no_please_wait] %>
+    <div class="col-12 col-md-6 d-flex justify-content-center justify-content-md-end">
+      <%= render_portal_partial "generate_api_key" %>
+    </div>
+  <% end %>
+</div>
+
+<% if dynamic %>
+  <script>
+    /**
+     * Get the greeting for the current time
+     */
+    const getGreeting = (hour) => {
+      let greeting = '<%= morning_text %>'
+      if (hour >= 18) {
+        greeting = '<%= evening_text %>'
+      } else if (hour >= 12) {
+        greeting = '<%= afternoon_text %>'
+      }
+
+      return greeting
+    }
+
+    /**
+     * Update the welcome text with the current greeting.
+     */
+    const updateWelcome = (hour) => {
+      if (<%= dynamic %>) {
+        $('.welcome').html(getGreeting(hour))
+      }
+    }
+
+    const initializeTimer = (callback, interval = 60000) => {
+      return setInterval(callback, interval)
+    }
+
+    /**
+     * Start the simulation
+     */
+    const start = () => {
+      updateWelcome(new Date().getHours())
+      timer = initializeTimer(() => {
+        updateWelcome(new Date().getHours())
+      })
+      return timer
+    }
+
+    $(start)
+  </script>
+<% end %>

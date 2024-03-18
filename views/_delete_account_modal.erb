@@ -1,0 +1,32 @@
+<%=
+  modal(id: "deleteAccountModal", size: :xl, aria_labelled_by: "delete-account-modal-title", content: {class: ["#{'bg-dark' if @dark_mode}"]}) do
+%>
+  <%= modal_header(close: 'light') do %>
+    <%= modal_title(id: "delete-account-title") do %>
+      <%= _('Delete Account') %>
+    <% end # modal_title %>
+  <% end #modal_header %>
+  <%= modal_body do %>
+    <%= bootstrap_form_tag(url: {action: :delete_account} ) do |f| %>
+      <fieldset class="border-danger">
+        <legend class="text-danger"><%= _('WARNING') %></legend>
+        <%= f.form_group do %>
+          <p class="text-center">
+            <%= _('Clicking the button below will cause your account to be
+            permanently erased, including any remaining usage or account credit.
+            This action is unrecoverable.') %>
+          </p>
+        <% end # f.form_group %>
+      </fieldset>
+      <fieldset>
+        <legend><%= _('Do you wish to proceed?') %></legend>
+        <%= f.form_group do %>
+          <%= f.submit(_('Delete my account'), class: portal_submit_classes(context: 'btn-danger'), data: { confirm: _('Are you really sure?'), disable_with: _('Please wait...') }) %>
+        <% end # f.form_group %>
+      </fieldset>
+    <% end # bootstrap_form_tag %>
+  <% end # modal_body %>
+  <%= modal_footer do %>
+    <%= modal_footer_close_button(_('Cancel')) %>
+  <% end # modal_footer %>
+<% end # modal %>

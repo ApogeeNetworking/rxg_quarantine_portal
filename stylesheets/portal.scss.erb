@@ -1,0 +1,35 @@
+/*
+CSS assets manifest for this custom portal.
+
+Bootstrap:
+*= require ./bootstrap
+*= require rails_bootstrap_forms
+*= require ./bootstrap_overrides
+
+Datatables:
+*= require ./datatables.min
+*= require ./datatables_overrides
+
+Fontawesome:
+*= require ./fontawesome/fontawesome
+*= require ./fontawesome/regular
+*= require ./fontawesome/solid
+*= require ./fontawesome/brands
+
+Custom Portal:
+*= require ./content
+*= require ./dialog
+*= require ./footer
+*= require ./location
+*= require ./graph
+*= require ./message
+
+Optional Extras:
+*= require ./extra
+
+Include brand styles, which may not exist.
+*= try_require brand/portal/default
+
+Include CSS contained within this file HERE:
+*= require_self
+*/

@@ -1,0 +1,68 @@
+<!-- payment information form -->
+<fieldset>
+  <legend><%= _('Payment Info') %></legend>
+
+  <%= f.form_group(class: 'row', style: 'margin-bottom: 0 !important;') do %>
+    <%= f.text_field(:first_name, label: _('First name'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 2, maxlength: 254, autocomplete: 'cc-given-name', autocorrect: :off, wrapper: {class: 'col-12 col-md-4'}) %>
+    <%= f.text_field(:middle_name, label: _('Middle name'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 2, maxlength: 254, autocomplete: 'cc-additional-name', autocorrect: :off, wrapper: {class: 'col-12 col-md-4'}) %>
+    <%= f.text_field(:last_name, label: _('Last name'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 1, maxlength: 254, autocomplete: 'cc-family-name', autocorrect: :off, wrapper: {class: 'col-12 col-md-4'}) %>
+  <% end # f.form_group %>
+  <%= f.form_group(class: 'row', style: 'margin-bottom: 0 !important;') do %>
+    <%= f.text_field(:company, label: _('Company'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 1, maxlength: 254, autocomplete: 'organization') %>
+
+    <%= f.telephone_field(:phone, {label: _('Phone'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 1, maxlength: 32, autocomplete: 'tel'}) %>
+
+    <%= f.text_field(:email, label: _('Billing Email (Optional)'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 1, maxlength: 254) %>
+  <% end # f.form_group %>
+  <% if ( (@usage_plan || @current_account_or_token.usage_plan).try(:is_stripe?) ) %>
+    <div class="row mb-3">
+      <div class="mb-2 col-12">
+        <p class="text-center">
+          <% if f.object.persisted? %>
+            <%= (_('Payment information is securely stored offsite with Stripe.  You may replace your current payment method <strong><em>%{payment}</em></strong> by entering a new card below.' ) % { payment: f.object.nickname }).html_safe %>
+          <% else %>
+            <%= _('Payment information is securely stored offsite with Stripe.  You may add a payment method by entering a new card below.') %>
+          <% end %>
+
+        </p>
+      </div>
+    </div>
+    <%= render_portal_partial('stripe_form_elements') %>
+  <% elsif ( (@usage_plan || @current_account_or_token.usage_plan).try(:is_cybersource?) ) %>
+    <div class="row mb-3">
+      <div class="mb-2 col-12">
+        <p class="text-center">
+          <% if f.object.persisted? %>
+            <%= (_('Payment information is securely stored offsite with CyberSource.  You may replace your current payment method <strong><em>%{payment}</em></strong> by entering a new card below.' ) % { payment: f.object.nickname }).html_safe %>
+          <% else %>
+            <%= _('Payment information is securely stored offsite with CyberSource.  You may add a payment method by entering a new card below.') %>
+          <% end %>
+        </p>
+      </div>
+    </div>
+    <%= render_portal_partial('cybersource_form_elements') %>
+  <% else %>
+    <%= f.form_group(class: 'row payment_fields') do %>
+      <%= f.text_field(:cc_number, {value: nil, label: _('Card Number'), placeholder: ((f.object.cc_number.present? && !f.object.is_stripe_token?) ? "#{f.object.credit_card.try(:brand).to_s.titleize }****#{f.object.cc_display_number.last(4)}#{_(' (saved)')}" : _('Card Number')), skip_label: true, disabled: params[:method].nil? ? false : params[:method] != 'direct', class: "#{portal_form_input_classes} cc-field", minlength: 13, maxlength: 19, pattern: '\d{13,19}', autocomplete: 'cc-number', autocorrect: :off, wrapper: {class: 'col-12 col-md-5 col-lg-12'}}) %>
+
+      <%= f.select(:cc_expiration_month, 1 .. 12, { label: _('Expiration Month'), skip_label: true, prompt: _('Month'), selected: f.object.nil? ? Time.now.month : f.object.cc_expiration_month.to_i, wrapper: {class: 'col-12 col-sm-4 col-md-2 col-lg-4'} }, { disabled: params[:method].nil? ? false : params[:method] != 'direct', class: "#{portal_form_select_classes} cc-field", autocomplete: 'cc-exp-month' }) %>
+
+      <%= f.select(:cc_expiration_year, Time.now.year .. Time.now.year + 20, { label: _('Expiration Year'), skip_label: true, prompt: _('Year'), selected: f.object.nil? ? Time.now.year : f.object.cc_expiration_year.to_i, wrapper: {class: 'col-12 col-sm-4 col-md-3 col-lg-4'} }, { disabled: params[:method].nil? ? false : params[:method] != 'direct', class: "#{portal_form_select_classes} cc-field", autocomplete: 'cc-exp-year' }) %>
+
+      <%= f.text_field(:cc_cvv2, size: 4, label: _('CVC'), label_as_placeholder: true, disabled: params[:method].nil? ? false : params[:method] != 'direct', class: "#{portal_form_input_classes} cc-field", minlength: 3, maxlength: 4, autocomplete: 'cc-csc', wrapper: {class: 'col-12 col-sm-4 col-md-2 col-lg-4'}) %>
+    <% end # f.form_group %>
+<% end %>
+</fieldset>
+<!-- address info -->
+<fieldset>
+  <legend><%= _('Billing Address') %></legend>
+  <%= f.form_group(class: 'row') do %>
+    <%= f.text_field(:address1, {label: _('Street Address'), label_as_placeholder: true, class: portal_form_input_classes, autocomplete: 'address-line1', autocorrect: :off, autocapitalize: :off}) %>
+    <%= f.text_field(:city, {label: _('City'), label_as_placeholder: true, class: portal_form_input_classes, autocomplete: 'address-level2', autocorrect: :off, autocapitalize: :off, wrapper: {class: 'col-12 col-md-6 col-lg-12'}}) %>
+    <%= f.text_field(:state, {label: _('State'), label_as_placeholder: true, class: portal_form_input_classes, wrapper: {class: 'col-12 col-sm-6 col-md-3 col-lg-6'}, autocomplete: 'address-level1', autocorrect: :off, autocapitalize: :off}) %>
+    <%= f.text_field(:zip, {label: _('Zip Code'), label_as_placeholder: true, class: portal_form_input_classes, wrapper: {class: 'col-12 col-sm-6 col-md-3 col-lg-6'}, autocomplete: 'postal-code', autocorrect: :off, autocapitalize: :off}) %>
+    <div class="col-12 mb-3">
+      <%= f.localized_country_select(:country, priority_countries=['US', 'CA'], {}, { class: portal_form_select_classes }) %>
+    </div>
+  <% end # f.form_group %>
+</fieldset>

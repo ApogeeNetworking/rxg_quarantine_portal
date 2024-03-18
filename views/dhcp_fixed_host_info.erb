@@ -1,0 +1,28 @@
+<div class="row">
+  <div class='col-12'>
+    <h2 class='text-center'><%= _("Creating a DHCP Reservation") %></h2>
+  </div>
+</div>
+<div>
+  <div class="col-12">
+    <p>
+      <%= _('Almost all devices use DHCP by default to aquire an IP address when joining a new network. When a device uses DHCP it asks your gateway what IP address it should use, and your gateway will give it the next available IP address, ie one not currently leased to a different device.') %>
+    </p>
+  </div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <p>
+      <%= _('If there is a DHCP Reservation configured for for the device, the device will always receive the same IP when it uses DHCP to ask for an IP address. Otherwise, if a device goes offline and/or leaves the network for an extended period of time, it may be given a different IP address when it returns.') %>
+    </p>
+  </div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <p>
+      <%= _('Usually, getting a new IP address each time a device re-joins the network is completely fine. However, there may be situations where other devices expect to connect to a particular device at a particular IP address. If that is the case, then using a DHCP Reservation for the device can help allow other devices to connect to it at a stable IP address.') %>
+      <br />
+      <%= link_to _('Go Back'), action: 'manage_devices' %>
+    </p>
+  </div>
+</div>

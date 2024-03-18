@@ -1,0 +1,127 @@
+<%
+  subscription = begin
+    # use the @subscription instance if it pertains to this usage plan.  don't
+    # assume the same addons will exist for other plans, so use a new Subscription
+    # in that case
+    if @subscription.usage_plan_id == usage_plan.id
+      @subscription
+    else
+      Subscription.assemble(usage_plan)
+    end # if @subscription.usage_plan_id == usage_plan.id
+  end # subscription = begin
+
+  if @current_account_or_token
+    subscription.reset_price_for_credit!(@current_account_or_token.prorated_credit)
+  end # if @current_account_or_token
+
+  descriptions = [
+    usage_plan.description,
+    usage_plan.time_plan.try(:description),
+    usage_plan.quota_plan.try(:description),
+    usage_plan.plan_addons.of_component_type(:misc).collect { |plan_addon| plan_addon.description },
+  ].flatten.compact
+
+  summary_items = []
+
+  # Bandwidth
+  if (policy = usage_plan.account_group.try(:policy)) 
+    policy.bandwidth_queues.each do |queue|
+      if queue.net_apps.empty? && queue.wan_targets.empty? 
+        summary_items << _('Speed: %{bandwidth}') % { bandwidth: queue.bandwidth }
+        break 
+      end # if queue.net_apps.empty? && queue.wan_targets.empty?
+    end # policy.bandwidth_queues.each 
+  end # if (policy = usage_plan.account_group.try(:policy)) 
+
+  # Max Devices
+  max = usage_plan.included_max_devices.to_i
+  if max > 0
+    devices_text = [(n_('Plan includes support for up to <b>1</b> device.', 'Plan includes support for up to <b>%{max}</b> devices.', max) % { max: max }) ]
+
+    if usage_plan.plan_addons.optional.of_component_type(:max_devices).exists?
+      devices_text <<  _('Support for more devices may be selected from the Optional Addons section below.') 
+    end # usage_plan.plan_addons.optional.of_component_type(:max_devices
+    summary_items << (_('Devices: %{text}') % { text: devices_text.join(' ') })
+  end # max > 0
+
+  # Usage Expiration
+  expiration_text = ''
+  if usage_plan.unlimited_usage_lifetime?
+   expiration_text = _('usage never expires')
+  elsif usage_plan.no_usage_lifetime?
+    unless usage_plan.plan_addons.of_component_type('lifetime').any?
+      expiration_text = _('maintain existing usage expiration')
+    end
+  elsif usage_plan.absolute_usage_lifetime
+    expiration_text = l(usage_plan.absolute_usage_lifetime)
+  elsif usage_plan.usage_lifetime_time
+    expiration_text =  _('%{time} after payment') % { time: pluralize(usage_plan.usage_lifetime_time, usage_plan.usage_lifetime_time_unit.singularize) }
+  end # usage_plan.unlimited_usage_lifetime
+
+  summary_items << (_('Expires: %{text}') % { text: expiration_text }) unless expiration_text.blank?
+
+  # Recurring Payment
+  summary_items << (_('Payment: Charged once immediately and billed %{method} to selected method of payment.') % { method: usage_plan.recurring_method } ) if usage_plan.is_recurring? && !usage_plan.price_free?
+
+  # Validation Required
+  summary_items << (_('Validation: Requires account validation by %{method}.') % { method: UsagePlan::VALIDATION_METHODS.inverse[usage_plan.validation_method] }) if usage_plan.requires_account_validation?
+
+  # Credit
+  summary_items << (_('Existing Credit: <span class="credit-price-element price_display" data-credit="%{credit}">- %{currency}%{credit}</span>') % { credit: subscription.credit, currency: subscription.currency_unit} ).html_safe if subscription.price_was_adjusted_for_credit?
+%>
+
+<div id="plan-description-<%= usage_plan.id %>" class="mb-3 quick-purchase-usage-plan" style="display: none;">
+  <div class="d-flex justify-content-between">
+    <h3><%= h(usage_plan.name) %></h3>
+    <div class="d-flex flex-column justify-content-center">
+      <div>
+        <% if subscription.price_display == 'free' %>
+          <span class="usage-plan-price h3"><%= h(subscription.price_display) %></span>
+        <% else %>
+          <%= (_('Price: <span class="usage-plan-price h3">%{price}</span>') % { price: h(subscription.price_display) }).html_safe %>
+        <% end # if subscription.price_display == 'free' %>
+      </div>
+      <% if usage_plan.base_price.to_f > 0.0 && !usage_plan.price_display == 'free' %>
+        <div>
+          <%= _('Base Price: %{price}') % { price: h(usage_plan.base_price_display) } %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  <% unless usage_plan.description.blank? %>
+    <% descriptions.each do |description| %>
+      <div>
+        <%= description.html_safe %>
+      </div>
+    <% end # descriptions.each %>
+  <% end # unless usage_plan.description.blank? %>
+
+  <ul>
+    <% summary_items.each do |item| %>
+      <li>
+        <%= item.html_safe %>
+      </li>
+    <% end # summary_items.each %>
+  </ul>
+</div>
+<div class="usage-plan-content">
+  <%= f.fields_for :usage_plan do |f| %>
+    <%= render_portal_partial 'quick_purchase_time_and_quota', locals: {usage_plan: usage_plan, subscription: subscription, f:f} %>
+
+    <%= render_portal_partial 'quick_purchase_plan_addon_fields', locals: {usage_plan: usage_plan, subscription: subscription, f:f} %>
+  <% end # fields_for :usage_plan %>
+  <div id="plan-total-<%= usage_plan.id %>" class="quick-purchase-plan-total" style="display: none;">
+    <div class="d-flex justify-content-between border-top border-bottom my-3 pt-2">
+      <h4 class="me-auto"><%= _('Total Price') %></h4>
+      <div class="right-align ms-auto">
+        <span class="price_display h4"><%= usage_plan.currency_unit unless usage_plan.price_free? %></span><span class="price_display total_price h4" data-base-price="<%= usage_plan.base_price.to_f %>">0.00</span>
+        <% if usage_plan.time_plan %>
+          <span class="included_price_element d-none" data-price="<%= usage_plan.time_plan.price %>"></span>
+        <% end %>
+        <% if usage_plan.quota_plan %>
+          <span class="included_price_element d-none" data-price="<%= usage_plan.quota_plan.price %>"></span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

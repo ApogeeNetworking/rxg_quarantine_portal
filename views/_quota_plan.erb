@@ -1,0 +1,13 @@
+<% visible = quota_plan.id == subscription.quota_plan_id %>
+<div class="quota_plan plan_addon" style="<%= 'display: none' unless visible %>" id="<%= "quota_plan_#{usage_plan.id}_#{quota_plan.id}" %>">
+
+  <div class="row">
+    <div class="col-6 center-align">
+      <div class="addon_description"><%= quota_plan.description.to_s.html_safe %></div>
+    </div>
+    <div class="col-6 right-align">
+      <span class="price_display" data-price="<%= quota_plan.price %>"><%= quota_plan.price_display(currency_unit: subscription.currency_unit) %></span>
+    </div>
+  </div>
+
+</div>

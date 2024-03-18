@@ -1,0 +1,99 @@
+<% if defined? scg %>
+  <%
+    title ||= _('Login in with Boingo')
+    hide_title ||= false
+  %>
+  <!-- BEGIN C9 INITIALIZATION SNIPPET -->
+  <!-- copy and paste the following into the <head> tag. -->
+  <script type="text/javascript" charset="utf-8">
+    (function (w, d) {
+      w.c9options = {};
+      /** IMPORTANT! CHANGE THESE! **/
+      c9options.venueId = '<%= scg.boingo_venue %>';
+      c9options.mac = '<%= client_mac %>';
+      /******************************/
+      c9options.form = "boingo_login"; //change formname to the name attribute of the form
+      c9options.disable = false;
+
+      w.c9init = function (c9) {
+        if (c9options.disable) {
+          return;
+        }
+        c9options.preauthenticate = function (f) {
+          // This function is responsible for putting the form inputs back into the login form after the ad has been watched, and automatically submitting that form. f is the form element.  For each input we care about, set its value from those returned by c9
+          // we don't actually care about any of our form inputs in this case f["credential"].value = c9.GET('credential'); change form_input1 to the name attribute of the input of the form. if you have multiple inputs, copy the above line and change the
+          // values
+
+          f.submit();
+          return false;
+        }
+        c9options.transformInterUrl = function (url) {
+          // This function is responible for serializing the form inputs into a redirect URL when the user submits the form
+
+          var loginUrl = c9.GET('login_url', url);
+          url = c9.rmGetParam(url, 'login_url');
+
+          // loginUrl += '&utf8=' + window.encodeURIComponent(document.accountLoginForm["utf8"].value); loginUrl += '&authenticity_token=' + window.encodeURIComponent(document.accountLoginForm["authenticity_token"].value); if you have multiple inputs, copy the
+          // above line and change the values instead of the above, we can use the jquery serialize function to add all form inputs to the URL
+          url += (
+            url.indexOf('?') === -1
+              ? '?login_url='
+              : '&login_url='
+          ) + window.encodeURIComponent(loginUrl); // + '&' + $("#boingo_login").serialize();
+
+          return url;
+        };
+
+        (new _c9.RedirectWidget(c9options)).pageLoad();
+      };
+      w.c9killLoader = function () {
+        var l = d.getElementById('c9loader'),
+          s = d.getElementById('c9styles');
+        l && (l.style.display = 'none');
+        s && s.parentNode.removeChild(s);
+      };
+      w.c9loader = function () {
+        if (c9options.disable) {
+          return;
+        }
+        d.write('<style id="c9styles" type="text/css">body{width:100%;height:100%;display:none;background:#fff;overflow:hidden;}</style>');
+        d.getElementById('c9loader').style.display = 'block';
+        setTimeout(function () {
+          if (!w._c9 && d.body) {
+            d.body.style.display = 'block';
+          }
+        }, c9options.msgTimeout || 3000);
+        setTimeout(function () {
+          if (!(w._c9 && w._c9.pageLoaded)) {
+            c9killLoader();
+          }
+        }, c9options.loadTimeout || 9000);
+      };
+    })(window, document);
+  </script>
+  <script type="text/javascript" charset="utf-8">
+    (function () {
+      var s,
+        host = "https:" == document.location.protocol
+          ? "https://nimbus.boingomedia.com"
+          : "http://nimbus.boingomedia.com",
+        c9 = document.createElement('script');
+      c9.type = 'text/javascript';
+      c9.async = true;
+      c9.src = host + "/wifi/" + c9options.venueId + "/asset.js";
+      s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(c9, s);
+    })();
+    window.onunload = function () {};
+  </script>
+  <!-- END C9 INITIALIZATION SNIPPET -->
+  
+  <%= bootstrap_form_tag(url: {action: :shared_credential_login}, id: 'boingo_login') do |f| %>
+    <%= f.hidden_field(:credential, value: scg.credential) %>
+    <fieldset class="d-flex flex-column h-100">
+      <legend class="<%= 'visually-hidden' if hide_title %>"><%= title %></legend>
+      <%= render_portal_partial('terms_checkbox', locals: { f: f }) %>
+      <%= f.submit(_('Sign In'), class: "mt-auto #{portal_login_submit_classes}", data: { disable_with: _('Please wait...') })%>
+    </fieldset>
+  <% end %>
+<% end %>

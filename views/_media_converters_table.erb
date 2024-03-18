@@ -1,0 +1,20 @@
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="row mb-2">
+      <div class="col-12 justify-content-between d-flex align-items-center">
+        <h4 class="align-middle d-inline mb-0"><%= _('Media Converter Equipment') %></h4>
+        <a class="collapser btn btn-sm btn-primary align-middle d-inline-block" data-toggle="collapse" href="#mediaConverterCollapse" role="button" aria-expanded="false" aria-controls="mediaConverterCollapse"></a>
+      </div>
+    </div>
+    <div class="row" id="mediaConverterCollapse">
+      <% @current_account_or_token.media_converters.portal_visible.each do |media_converter| %>
+        <div class="device_summary_row col-12">
+          <span class="device_header"><%= media_converter.name %></span>
+          <div class="detail_row">
+            <%= render_portal_partial 'media_converter_detail_row', locals: {media_converter: media_converter} %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+<%
+  title ||= ''
+  destinations ||= []
+  css_classes ||= 'col'
+%>
+<div class="<%= css_classes %>">
+  <%= card(class: portal_card_classes, style: 'height: 100%;') do %>
+    <%= card_body do %>
+      <%= card_title(class: 'mb-2') do %>
+        <%= title %>
+      <% end # card_title %>
+      <div class="row g-2 row-cols-2 row-cols-sm-4 row-cols-md-6 row-cols-lg-4 row-cols-xl-6 justify-content-start">
+        <% destinations.each do |destination| %>
+          <%= render_portal_partial('destination_summary', locals: {destination: destination}) if destinations.any? %>
+        <% end %>
+        <% if destinations.empty? %>
+          <%= card_text(class: 'text-center h4 w-100') do %>
+            <%= ('No Data') %>
+          <% end # card_text %>
+        <% end # if destinations.empty? %>
+      </div>
+    <% end # card_body %>
+  <% end # card %>
+</div>

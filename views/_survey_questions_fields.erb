@@ -1,0 +1,108 @@
+<% @survey_questions.each do |survey_question| %>
+  <%
+    default_html_options = case survey_question.question_type
+    when 'text_box'
+      {
+        required: survey_question.required,
+        placeholder: survey_question.question,
+        required: survey_question.required,
+        size: 20,
+        class: portal_form_input_classes,
+      }
+    when 'text_area'
+      {
+        placeholder: survey_question.question,
+        size: 20,
+        class: portal_form_input_classes,
+        required: survey_question.required
+      }
+    when 'email'
+      {
+        required: survey_question.required,
+        placeholder: survey_question.question,
+        size: 20,
+        class: portal_form_input_classes,
+      }
+    when 'radio'
+      {
+        name: "survey_questions[#{survey_question.id}][answer]",
+        required: survey_question.required
+      }
+    when 'check_box'
+      {
+        class: portal_form_input_classes.to_s.gsub(/form-control/, ''),
+        required: survey_question.required
+      }
+    when 'multi_check_box'
+      {
+        class: portal_form_input_classes.to_s.gsub(/form-control/, ''),
+        required: survey_question.required
+      }
+    when 'number_field'
+      {
+        class: portal_form_input_classes,
+        required: survey_question.required,
+        placeholder: survey_question.question,
+      }
+    when 'select'
+      {
+        name: "survey_questions[#{survey_question.id}][answer]",
+        required: survey_question.required
+      }
+    end
+
+    opts = default_html_options
+
+    # operator may set some html attributes by creating options with the specified
+    # option as the display name
+    allowable_html_options = SurveyQuestion::PERMITTED_OPTIONS[survey_question.question_type].to_a
+
+    survey_question.survey_question_options.order(:display_text).each do |o|
+      if o.value.present? && o.display_text.to_sym.in?(allowable_html_options)
+        if o.display_text == 'size' && opts[:class].to_s =~ /form-control/
+          # size won't work when the input has the form-control class unless we
+          # override the width.
+          opts[:class] += ' w-auto' unless opts[:class] =~ /w-auto/
+        end
+        opts[o.display_text.to_sym] = o.value
+      end
+    end
+
+    question_opts = survey_question.survey_question_options.reject { |o| o.display_text.to_sym.in?(allowable_html_options) }
+  %>
+
+  <div class="col-12 mb-3">
+    <%= fields_for 'survey_questions[]', survey_question do |field| %>
+      <% case survey_question.question_type %>
+      <% when 'text_box', nil %>
+        <%= field.label :answer, survey_question.question, class: ('sr-only' if opts[:placeholder] == survey_question.question) %>
+        <%= field.text_field :answer, **opts %>
+      <% when 'text_area' %>
+        <%= field.label :answer, survey_question.question, class: ('sr-only' if opts[:placeholder] == survey_question.question) %>
+        <%= field.text_area :answer, **opts  %>
+      <% when 'email' %>
+        <%= field.label :answer, survey_question.question, class: ('sr-only' if opts[:placeholder] == survey_question.question) %>
+        <%= field.email_field :answer, opts %>
+      <% when 'radio' %>
+        <%= field.label :answer, survey_question.question %>
+        <%= field.collection_radio_buttons :answer, question_opts, :value, :display_text, {}, opts do |b| %>
+          <div><%= b.radio_button %> <%= b.label %></div>
+        <% end %>
+      <% when 'select' %>
+        <%= field.label :answer, survey_question.question %>
+        <%= field.collection_select :answer, question_opts, :value, :display_text, {}, opts %>
+      <% when 'check_box' %>
+        <%= field.check_box :answer, opts, true, false %>
+        <%= field.label :answer, survey_question.question %>
+      <% when 'multi_check_box' %>
+        <%= field.label :answer, survey_question.question %>
+        <%= field.collection_check_boxes :answer, question_opts, :value, :display_text, {}, opts do |b| %>
+          <div><%= b.check_box %> <%= b.label %></div>
+        <% end %>
+      <% when 'number_field' %>
+        <%= field.label :answer, survey_question.question %>
+        <%= field.number_field :answer, opts %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

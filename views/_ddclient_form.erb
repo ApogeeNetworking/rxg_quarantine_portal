@@ -1,0 +1,61 @@
+<div>
+  <div class="row">
+    <div class="col-12">
+      <p class="text-center">
+        <%= (_('Currently assigned public IP: <strong>%{ip}</strong>') % {ip: (@current_account.nat_assignments.first.try(:nat_ip) || _('Unknown'))}).html_safe %>
+      </p>
+    </div>
+  </div>
+  <% @ddclients = [Ddclient.new] %>
+  <div class="row bg-dark text-light">
+    <div class="col-9 col-md-6">
+      <%= _('Protocol') %>
+    </div>
+    <div class="col-12 col-md-8">
+      <div class="mb-2 col-4">
+        <%= _('Domain Name') %>
+      </div>
+      <div class="mb-2 col-4">
+        <%= _('Username') %>
+      </div>
+      <div class="mb-2 col-4">
+        <%= _('Password') %>
+      </div>
+    </div>
+    <div class="mb-2 col-md-2">
+    </div>
+  </div>
+  <% @ddclients.each do |ddclient| %>
+    <%= bootstrap_form_for( ddclient, url: {action: :save_ddclient_config}) do |f| %>
+      <fieldset class="row mb-3">
+        <%= f.hidden_field :id, id: nil %>
+        <div class="col-9 col-md-6">
+          <div class="mb-2 col-12">
+            <%= f.collection_select :protocol, Ddclient::PROTOCOLS, :last, :first, { }, {class: portal_form_select_classes(large: true), id: nil, label: _('Protocol')}  %>
+          </div>
+        </div>
+        <div class="col-12 col-md-8">
+          <div class="mb-2 col-4">
+            <%= f.text_field :hosts, {class: portal_form_input_classes(large: true), id: nil, label: _("Host"), label_as_placeholder: true} %>
+          </div>
+          <div class="col-4">
+            <%= f.label :login, _('Login'), class: 'visually-hidden '%>
+          </div>
+          <div class="col-4">
+            <%= f.password_field :password, {class: portal_form_input_classes(large: true), id: nil, autocomplete: "new-password", label: (ddclient.persisted? ? _('Saved') : _('Password')), label_as_placeholder: true} %>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <%= f.submit _('Save'), class: portal_submit_classes, data: { disable_with: _('Please wait...') } %>
+        </div>
+        <% if ddclient.persisted? %>
+          <div class="row">
+            <div class="col-12">
+              <hr>
+            </div>
+          </div>
+        <% end # if ddclient.persisted? %>
+      </fieldset>
+    <% end # bootstrap_form_for %>
+  <% end # @ddclients.each %>
+</div>

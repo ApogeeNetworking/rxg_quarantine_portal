@@ -1,0 +1,46 @@
+<%
+  can_logout_device = @current_account && @current_account.lock_devices == false
+  cells = [
+    l(ls.updated_at),
+    ls.ip,
+    ls.http_user_agent ? ls.http_user_agent.name : '–',
+  ]
+
+  logout_content = nil
+
+  if can_logout_device
+    if ls.mac == client_mac
+      button(_('Logout'), url: {action: :login_session_destroy}, context: :danger, link: true, data: {disable_with: _('Please wait...'), confirm: _('This will log you out. Proceed?')})
+    else
+      bootstrap_form_tag(url: {action: :logout_device}) do |f|
+        f.hidden_field(:existing_login_session_id, value: ls.id)
+        f.submit(_('Logout'), class: portal_login_submit_classes, data: { disable_with: _('Please wait...') })
+      end
+    end # if ls.mac == client_mac
+  end # if can_logout_device
+
+  cells << logout_content
+%>
+<%= table_row do %>
+  <%= table_data do %>
+    <%= l(ls.updated_at) %>
+  <% end # table_data %>
+  <%= table_data do %>
+    <%= ls.ip %>
+  <% end # table_data %>
+  <%= table_data do %>
+    <%= ls.http_user_agent ? ls.http_user_agent.name : '–' %>
+  <% end # table_data %>
+  <%= table_data(class: 'action-cell') do %>
+    <% if can_logout_device %>
+      <% if ls.mac == client_mac %>
+        <%= link_to(_('Logout'), {action: :login_session_destroy}, {class: 'd-block mx-auto text-center', data: { disable_with: _('Please wait...'), data: { confirm: 'This will log you out. Proceed?' } } }) %>
+      <% else %>
+        <%= form_tag(action: :logout_device, existing_login_session_id: ls.id) do %>
+        <%# Prevent an end-user from logging out her current session %>
+          <%= button_tag(_('Logout'), class: 'btn btn-lg btn-danger d-block mx-auto text-center', data: { disable_with: _('Please wait...') }) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end # table_data %>
+<% end # table_row %>

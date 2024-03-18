@@ -1,0 +1,49 @@
+<%= modal(id: "invite_lan_party_#{party.id}", scrollable: true, size: :xl, aria_labelled_by: "invite_lan_party_#{party.id}_title", content: { class: ["#{'bg-dark' if @dark_mode}"] }) do %>
+  <%= modal_header(close: @dark_mode ? 'light' : true) do %>
+    <%= modal_title(id: "invite_lan_party_#{party.id}_title") do %>
+      <%= _('Invite a friend to your LAN Party') %>
+    <% end # modal_title %>
+  <% end #modal_header %>
+  <%= modal_body do %>
+    <h3><%= _('Name:') %> <%= party.name %></h3>
+    <p>
+      <%= _('<strong>WARNING:</strong> By inviting other users to join your network, you are allowing another person direct access to your devices. Up-to-date Anti-virus and firewalls are recommended to protect your devices.  Only invite users you trust to join your LAN Party.').html_safe %>
+    </p>
+    <p>
+      <%= _('<strong>Note:</strong> The user you invite must already have an
+      existing account in order to receive your LAN Party
+      invitation.').html_safe %>
+    </p>
+    <%= bootstrap_form_tag(url: {action: :invite_lan_party, id: party.id}) do |f| %>
+      <fieldset>
+        <legend><%= _('Invite a user by email:') %></legend>
+        <%= f.form_group do %>
+          <%= f.email_field(:email, {label: _('Email address'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 3, maxlength: 254, autocomplete: 'email', autocorrect: :off, autocapitalize: :off, spellcheck: false}) %>
+        <% end # form_group %>
+        <%= f.form_group do %>
+          <%= f.text_area :invitation_text, { class: portal_form_input_classes(large: true), label: 'Invitation message (optional)', label_as_placeholder: true} %>
+        <% end # form_group %>
+        <%= f.submit _('Send Invite'), class: portal_submit_classes, data: {disable_with: _('Sending...')} %>
+      </fieldset>
+    <% end # bootstrap_form_tag %>
+    <% if party.password.present? %>
+      <p>
+        <%= _('This LAN Party may also be joined by entering the password shown below.  You may update the password or remove it to allow only accounts you explicitly invite.') %>
+      </p>
+    <% else %>
+      <p>
+        <%= _('Password-based access to this LAN party is currently disabled.  You may enable it by setting a password below. When a password is set, any registered user may enter this LAN party by entering the password. Choose a complex password to protect your devices.') %>
+      </p>
+    <% end %>
+    <%= bootstrap_form_for(party, url: {action: :update_lan_party, id: party.id}) do |f| %>
+      <fieldset>
+        <legend><%= _('Set a password') %></legend>
+        <%= f.form_group do %>
+          <%= f.password_field(:password, {label: _('LAN Party Password'), label_as_placeholder: true, class: portal_form_input_classes, minlength: 2, maxlength: 40, autocomplete: 'new-password', autocorrect: :off, autocapitalize: :off, spellcheck: false}) %>
+        <% end # form_group %>
+        <%= f.submit _('Update'), class: portal_submit_classes, data: {disable_with: _('Please wait...')}  %>
+      </fieldset>
+    <% end # bootstrap_form_for %>
+  <% end #modal_body %>
+  <%= modal_footer %>
+<% end # modal %>

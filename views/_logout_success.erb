@@ -1,0 +1,10 @@
+<%= card_body do %>
+  <p class="text-center" style="font-size: 5rem;">👋</p>
+  <%= card_title(class: "my-3") do %>
+    <%= _('See you again!') %>
+  <% end # card_title %>
+  <%= card_text(class: 'my-3') do %>
+    <%= _('Thanks for using our portal. You are now successfully signed out.') %>
+  <% end # card_text %>
+  <%= link_to _('Return to Login'), { action: :index }, { class: 'd-inline-block mx-auto my-3 btn btn-lg btn-primary' } %>
+<% end # card_body %>

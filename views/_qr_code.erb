@@ -1,0 +1,33 @@
+<%
+  require 'digest'
+  text ||= ''
+
+  # qrcode has a 40 char minimum
+  qrcode_string = text.ljust(40).gsub(/\"/,"\\\"").html_safe
+
+  md5 = Digest::MD5.new
+  md5 << qrcode_string
+
+  # A random div to support multiple qr codes in the same view
+  qrcode_id = "qrcode#{md5.hexdigest}#{Time.now.to_i}"
+
+  size ||= 256
+  style ||= ''
+  color_dark ||= '#000'
+  color_light ||= '#fff'
+%>
+
+<div class="qrcode" id="<%= qrcode_id %>"></div>
+<script type="text/javascript">
+  $(() => {
+    window.qrcodes = window.qrcodes || {}
+    window.qrcodes['<%= qrcode_id %>'] = new QRCode(document.getElementById('<%= qrcode_id %>'), {
+      text: "<%= qrcode_string %>",
+      width: <%= size %>,
+      height: <%= size %>,
+      colorLight: '<%= color_light %>',
+      colorDark: '<%= color_dark %>'
+    });
+    $('#<%= qrcode_id %> img').addClass('<%= style %>')
+  })
+</script>

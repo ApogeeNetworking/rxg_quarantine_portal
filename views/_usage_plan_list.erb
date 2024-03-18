@@ -1,0 +1,31 @@
+<%= card_body do %>
+  <%= card_title do %>
+    <%= _('Usage Plans') %>
+  <% end # card_title %>
+  <% unless @current_account %>
+    <%= card_text(class:"text-center py-1") do %>
+      <% if @login_session %>
+        <%= (_('Please %{link} to purchase') % { link: link_to('sign up', action: :quick_purchase) }).html_safe %>
+      <% else %>
+        <%= (_('Please %{signup_link} or %{login_link} to purchase') % { signup_link: link_to('sign up', action: :quick_purchase), login_link: link_to('login', action: :index) }).html_safe %>
+      <% end # if @login_session %>
+    <% end # card_text %>
+  <% end # unless @current_account %>
+  <% if @current_account && @current_account.usage_plan && @current_account.usage_plan.price %>
+    <%= card_text(class:"text-center align-self-center mb-0") do %>
+      <%= (_('Your most recent plan was the <strong class="rg-branding-primary">%{plan}</strong> plan at <strong class="rg-branding-primary">%{price}</strong>') % { plan: @current_account.usage_plan.name, price: @current_account.usage_plan.price_display}).html_safe %>
+    <% end # card_text %>
+  <% end # if @current_account && @current_account.usage_plan && @current_account.usage_plan.price %>
+  <%= render_portal_partial('prorated_credit', locals: {classes: 'mb-4'}) %>
+  <% @usage_plans.sort_by {|p| [ (@current_account_or_token.try(:usage_plan) == p ? 0 : 1), p.price ] }.each_with_index do |usage_plan, index| %>
+    <% button = render_portal_partial('usage_plan_purchase_button', locals: { usage_plan: usage_plan, merchant: @merchant }) %>
+    <% if usage_plan.merchant && usage_plan.merchant.offsite_gateway? && ! usage_plan.price_free? %>
+      <%= render_portal_partial('usage_plan', object: usage_plan, locals: { button: button, css_class: "mb-3 #{'border border-primary' if index == 0}" }) %>
+    <% else %>
+      <%= bootstrap_form_for(usage_plan, url: { action: :usage_plan_purchase, id: usage_plan.id }, method: :get,
+        name: sprintf('build_subscription_%i', usage_plan.id), class: 'build_usage_plan' ) do |f| %>
+        <%= render_portal_partial('usage_plan', object: usage_plan, locals: { button: button, css_class: "mb-3 #{'border border-primary' if index == 0}" }) %>
+      <% end # bootstrap_form_for %>
+    <% end # if usage_plan.merchant && usage_plan.merchant.offsite_gateway? && ! usage_plan.price_free? %>
+  <% end # @usage_plans.sort_by {|p| [ (@current_account_or_token.try(:usage_plan) == p ? 0 : 1), p.price ] }.each_with_index %>
+<% end # card_body %>

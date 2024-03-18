@@ -1,0 +1,12 @@
+<%= render_portal_partial('welcome_message', locals: { dynamic: true }) unless action_name == 'login_success' %>
+<%= render_portal_partial('summary_session_info') %>
+<% if @login_session.online? %>
+  <div class="row g-3 mb-3 row-cols-12 row-cols-lg-2">
+    <%#= render_portal_partial('popular_applications') if @current_account_or_token %>
+    <%= render_portal_partial('popular_destinations') if @current_account_or_token %>
+    <%#= render_portal_partial('summary_profile') if @current_account %>
+    <%#= render_portal_partial('summary_devices') if @current_account_or_token %>
+    <%= render_portal_partial('summary_usage') if @current_account_or_token %>
+    <%#= render_portal_partial('summary_billing') if @current_account_or_token.try(:usage_plan) %>
+  </div>
+<% end # if @login_session.online? %>

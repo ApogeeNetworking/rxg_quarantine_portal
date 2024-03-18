@@ -1,0 +1,4 @@
+<%
+  device ||= Device.new(name: 'Device', mac: Mac.random_mac, account: @current_account_or_token)
+%>
+<%= content_tag(:i, "", class: "#{device.fa_icon} align-bottom") %>
