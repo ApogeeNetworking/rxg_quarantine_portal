@@ -24,9 +24,9 @@ class Portal::ApogeeController < PortalController
 
   # remove the # infront of the two lines below this to enable the controller mod
   # that allows you to view the page without a transient membership (for testing)
-  # def quarantine_trigger
+  def quarantine_trigger
 
-  # end
+  end
   
   def strip_params
     # Check top-level and common nested params
