@@ -1,11 +1,11 @@
 <%
-  chat_url = @data_key_chaturl_
+  chat_url = @data_key_chat_url
   support_number = @data_key_phone_number
 %>
 <script>
     function openChat() {
         var chaturl = '<%= chat_url %>'
-        window.open(chaturl + '/chat.html', 'ChatWithSupport', 'width=400,height=600');
+        window.open(chaturl, 'ChatWithSupport', 'width=400,height=600');
         return false;
     }
 </script>
